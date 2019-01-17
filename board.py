@@ -1,12 +1,29 @@
 import math
 
-# List of all possible pieces that can be placed on board regardless of player.
-PIECE_TYPES = {"monomino": [(0, 0)],
-               "domino": [(0, 0), (1, 0)],
+# {key - piece name: val - offsets from index (assuming piece oriented east)}
+PIECE_TYPES = {"monomino1": [(0, 0)],
+               "domino1": [(0, 0), (1, 0)],
                "trominoe1": [(0, 0), (1, 0), (1, 1)],
                "trominoe2": [(0, 0), (1, 0), (2, 0)],
+               "tetrominoes1": [(0, 0)],
+               "tetrominoes2": [(0, 0)],
+               "tetrominoes3": [(0, 0)],
+               "tetrominoes4": [(0, 0)],
+               "tetrominoes5": [(0, 0)],
+               "pentominoe1": [(0, 0)],
+               "pentominoe2": [(0, 0)],
+               "pentominoe3": [(0, 0)],
+               "pentominoe4": [(0, 0)],
+               "pentominoe5": [(0, 0)],
                "pentominoe6": [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)],
-               "pentominoe11": [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)]}
+               "pentominoe7": [(0, 0)],
+               "pentominoe8": [(0, 0)],
+               "pentominoe9": [(0, 0)],
+               "pentominoe10": [(0, 0)],
+               "pentominoe11": [(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)],
+               "pentominoe12": [(0, 0)]}
+# List of all possible orientations piece can be placed
+ORIENTATIONS = ["north", "northwest", "south", "southeast", "west", "southwest", "northeast", "east"]
 
 
 class Board:
@@ -86,6 +103,13 @@ class Board:
         '''
         return x, index[0] - (index[0] - y) * -1
 
+    def get_valid_moves(self, piece_type, player_color):
+        valid_moves = []
+        for i in range(20):
+            for j in range(20):
+                valid_moves.append((i, j))
+        return valid_moves
+
     def place_piece(self, is_index, x, y):
         '''Sets piece on board
         '''
@@ -102,5 +126,78 @@ class Board:
     def display_board(self):
         ''' Prints out current contents of the board to the console
         '''
-        for row in self.board_contents:
+        print("\n======================= CURRENT BOARD =======================")
+        for count, row in enumerate(self.board_contents):
+            if count == 0:
+                print("   1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20")
+            if count < 9:
+                print(count + 1, " ", end="")
+                print(*row)
+            else:
+                print(count + 1, *row)
+
+    #### MINI BOARD SECTION ####
+    def reset_mini_board(self, size):
+        ''' Resets mini board that's used to help player decide how to orient their 
+            game piece on the main board
+        '''
+        self.mini_board = []
+        if size * 2 % 2 == 0:
+            size = size * 2 + 1
+        else:
+            size = size * 2
+
+        for _ in range(size):
+            row = []
+            for _ in range(size):
+                row.append(". ")
+            self.mini_board.append(row)
+
+    def display_piece(self, piece_type, player_color):
+        ''' Displays the piece type without any orientation specified yet.
+        '''
+        self.player_color = player_color
+        mini_board = self.reset_mini_board(len(PIECE_TYPES[piece_type]))
+        index = (len(PIECE_TYPES[piece_type]), len(PIECE_TYPES[piece_type]))
+
+        for offset in PIECE_TYPES[piece_type]:
+            self.place_piece_on_mini_board(True, index[0] + offset[0], index[1] + offset[1])
+
+        print("PIECE:", piece_type)
+        self.display_mini_board()  # default orientation shown when just displaying the piece before orientation
+
+    def display_possible_orientations(self, piece_type, player_color):
+        ''' Displays all the possible orientations the user could choose 
+            from the selected piece type.
+        '''
+        self.player_color = player_color
+        for piece_orientation in ORIENTATIONS:  # ADD ONLY VALID ORIENTATIONS here.... -> valid(ORIENTATIONS)
+            mini_board = self.reset_mini_board(len(PIECE_TYPES[piece_type]))
+            index = (len(PIECE_TYPES[piece_type]), len(PIECE_TYPES[piece_type]))
+            for offset in PIECE_TYPES[piece_type]:
+                if offset == (0, 0):
+                    self.place_piece_on_mini_board(True, index[0] + offset[0], index[1] + offset[1])  # Orientation doesn't matter since (0, 0) is the reference point
+                else:
+                    new_x, new_y = self.rotate_piece(index, offset, piece_orientation)
+                    self.place_piece_on_mini_board(False, new_x, new_y)
+            print("ORIENTATION:", piece_orientation.upper().strip())
+            self.display_mini_board()
+
+    def place_piece_on_mini_board(self, is_index, x, y):
+        ''' Places piece on only mini board. NOT the actual board. 
+            This is just to help the player visually decide how they 
+            want their piece placed on the main board.
+        '''
+        if is_index:
+            self.mini_board[y][x] = "X "  # Places X to indicate the connection point/index
+        else:
+            self.mini_board[y][x] = self.player_color
+
+    def display_mini_board(self):
+        ''' Displays piece type only on the mini board
+        '''
+        for row in self.mini_board:
             print(*row)
+        print("\n")
+
+    #### END OF MINI BOARD SECTION ####
