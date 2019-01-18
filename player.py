@@ -22,12 +22,17 @@ class Player:
         self.player_score = 0
         self.current_pieces = list(GAME_PIECE_VALUES.keys())  # Gives all piece names to player when game starts
 
-    def prompt(self):
+    def prompt(self, round_count):
         ''' Asks for the type of piece, where to place that piece (index),
             and what orientation they want that piece in. Returns requested
             update to the board only if all info is valid.
         '''
-        all_valid_moves = self.board_state.get_all_valid_moves(self.player_color, self.current_pieces)  # Gets master dict of all valid moves including orientations for the current player's color {(x,y):['orientations']}
+        if round_count == 0:  # If first round, players must place pieces on corners only.
+            all_valid_moves = self.board_state.get_initial_valid_moves(self.player_color, self.current_pieces)  # Gets all initial valid moves where only the corners can be played
+        else:
+            all_valid_moves = self.board_state.get_all_valid_moves(self.player_color, self.current_pieces)  # Gets master dict of all valid moves including orientations for the current player's color {(x,y):['orientations']}
+
+        print("VALID MOVES w/ ORIENTATIONS:\n", all_valid_moves, sep="")
 
         piece_type = self.prompt_type(all_valid_moves)
         index = self.prompt_index(all_valid_moves, piece_type)  # Passing in only valid indexes (don't need orientations for this method)
@@ -35,6 +40,7 @@ class Player:
 
         self.current_pieces.remove(piece_type)  # Removes chosen piece from the player's current available pieces
         self.update_score(piece_type)
+
         return self.player_color, index, piece_type, orientation
 
     def prompt_type(self, all_valid_moves):
@@ -67,17 +73,28 @@ class Player:
                 print("You selected an invalid coordinate. Try again.")
 
     def prompt_orientation(self, all_valid_moves, piece_type, index):
+        valid_orientations = []
+        for index in all_valid_moves[piece_type]:
+            if index[0] == index:
+                for orientation in index[1]:
+                    valid_orientations.append(orientation)
+
         while True:
             see_orientations = input("Would you like to see the list of valid orientations you can make? Y/[N]: ").upper()
+
             if see_orientations == "Y":
-                self.board_state.display_possible_orientations(piece_type, self.player_color)
+                #print("VALID ORIENATONS:", valid_orientations)
+                self.board_state.display_possible_orientations(piece_type, self.player_color, valid_orientations)
+
             user_orientation = input("Which orientation do you want your piece? ").lower().strip()
 
             for index in all_valid_moves[piece_type]:
                 for orientation in index[1]:
                     if user_orientation == orientation:
                         return orientation
-            print("You specified an erronous or invalid orientation. Try again.")
+            # if user_orientation in valid_orientations:
+            else:
+                print("You specified an erronous or invalid orientation. Try again.")
 
     def update_score(self, piece_type):
         ''' Updates overall player score by amount the piece type is worth

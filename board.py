@@ -103,23 +103,37 @@ class Board:
         '''
         return x, index[0] - (index[0] - y) * -1
 
+    def get_initial_valid_moves(self, player_color, player_pieces):
+        ''' Gets all valid moves accounting for the first round rule where players can only
+            place pieces on one of the corners of the board.
+        '''
+        all_initial_valid_moves = {"domino1": [((0, 0), ["south", "east"]), ((19, 19), ["north", "west"])],
+                                   "pentominoe6": [((19, 19), ["north", "west"])]}
+
+        return all_initial_valid_moves
+
     ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ##
     def get_all_valid_moves(self, player_color, player_pieces):
+        ''' Returns all the valid moves on the board that meet the following criteria:
+            - Index of selected piece touches same-colored corner of a piece
+            - Player piece does not fall outside of the board
+            - Player piece does not overlap any of their pieces or other opponent pieces
+            - May lay adjacent to another piece as long as its another color
+        '''
         valid_piece = "domino1"  # get all pieces where there is at least one valid move
         valid_point = (0, 0)
         valid_orientation = "south"
         all_valid_moves = {valid_piece: [(valid_point, [valid_orientation, "east"])],
                            "pentominoe11": [((7, 7), ["south", "north", "northwest"])]}
 
-        print("VALID MOVES w/ ORIENTATIONS:\n", all_valid_moves, sep="")
         return all_valid_moves
     ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ##
 
     def place_piece(self, is_index, x, y):
-        '''Sets piece on board
+        ''' Places piece on board by filling board_contents with the current player color
         '''
         if is_index:
-            self.board_contents[y][x] = "X "  # For my testing only
+            self.board_contents[y][x] = "X "  # For visual reference to the index point
         else:
             if self.board_contents[y][x] != ". ":  # Last defence against invalid moves
                                                    # (but it only stops the poiont from being dropped so it will
@@ -176,7 +190,7 @@ class Board:
         print("PIECE:", piece_type)
         self.display_mini_board()  # default orientation shown when just displaying the piece before orientation
 
-    def display_possible_orientations(self, piece_type, player_color):
+    def display_possible_orientations(self, piece_type, player_color, valid_orientations):
         ''' Displays all the possible orientations the user could choose
             from the selected piece type.
         '''
