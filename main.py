@@ -20,21 +20,16 @@ def main():
 
     end_game = False
     round_count = 0
-    players = [red, blue, green, yellow]
+    all_players = [red, blue, green, yellow]
 
     # Continously loops though game and each player's turn until end game
-    for p in itertools.cycle(players):
-        # myboard.update_board("R ", (4, 4), "pentominoe6", "north")
-        current_board.display_board()
-        print("\n======================================")
-        print("ROUND:", str(round_count), "            CURRENT PLAYER:", p.player_color)
-        print("======================================")
-        print("SCORES:  R =", red.player_score, "| B =", blue.player_score, "| G =", green.player_score, "| Y =", yellow.player_score)
-        color, index, piece_type, orientation = p.prompt()
-
+    for current_player in itertools.cycle(all_players):
+        current_board.display_board(current_player, all_players, round_count)
+        #EXAMPLE: myboard.update_board("R ", (4, 4), "pentominoe6", "north")
+        color, index, piece_type, orientation = current_player.prompt()
         current_board.update_board(color, index, piece_type, orientation)
-        # current_board.display_board()
-        if p.player_color == "Y ":
+
+        if current_player.player_color == "Y ":  # Increment round count each time last player's turn is done.
             round_count += 1
 
         if end_game:

@@ -103,27 +103,31 @@ class Board:
         '''
         return x, index[0] - (index[0] - y) * -1
 
-    def get_valid_moves(self, piece_type, player_color):
-        valid_moves = []
-        for i in range(20):
-            for j in range(20):
-                valid_moves.append((i, j))
+    ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ##
+    def get_all_valid_moves(self, player_color, player_pieces):
+        valid_piece = "domino1"  # get all pieces where there is at least one valid move
+        valid_point = (0, 0)
+        valid_orientation = "south"
+        valid_moves = {valid_piece: [(valid_point, [valid_orientation, "east"])],
+                       "pentominoe11": [((7, 7), ["south", "north", "northwest"])]}
+
         return valid_moves
+    ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ##
 
     def place_piece(self, is_index, x, y):
         '''Sets piece on board
         '''
         if is_index:
-            self.board_contents[y][x] = "X "  # For my testing only
+            self.board_contents[y][x]= "X "  # For my testing only
         else:
             if self.board_contents[y][x] != ". ":  # Last defence against invalid moves
                                                    # (but it only stops the poiont from being dropped so it will
                                                    # appear overlapped since it doesn't stop the whole piece form being placed)
                 print("Couldn't place piece since there was a piece there!")
             else:
-                self.board_contents[y][x] = self.player_color
+                self.board_contents[y][x]= self.player_color
 
-    def display_board(self):
+    def display_board(self, current_player, players, round_count):
         ''' Prints out current contents of the board to the console
         '''
         print("\n======================= CURRENT BOARD =======================")
@@ -136,19 +140,24 @@ class Board:
             else:
                 print(count + 1, *row)
 
+        print("\n======================================")
+        print("ROUND:", str(round_count), "            CURRENT PLAYER:", current_player.player_color)
+        print("======================================")
+        print("SCORES:  R =", players[0].player_score, "| B =", players[1].player_score, "| G =", players[2].player_score, "| Y =", players[3].player_score)
+
     #### MINI BOARD SECTION ####
     def reset_mini_board(self, size):
-        ''' Resets mini board that's used to help player decide how to orient their 
+        ''' Resets mini board that's used to help player decide how to orient their
             game piece on the main board
         '''
-        self.mini_board = []
+        self.mini_board= []
         if size * 2 % 2 == 0:
-            size = size * 2 + 1
+            size= size * 2 + 1
         else:
-            size = size * 2
+            size= size * 2
 
         for _ in range(size):
-            row = []
+            row= []
             for _ in range(size):
                 row.append(". ")
             self.mini_board.append(row)
@@ -156,42 +165,42 @@ class Board:
     def display_piece(self, piece_type, player_color):
         ''' Displays the piece type without any orientation specified yet.
         '''
-        self.player_color = player_color
-        mini_board = self.reset_mini_board(len(PIECE_TYPES[piece_type]))
-        index = (len(PIECE_TYPES[piece_type]), len(PIECE_TYPES[piece_type]))
+        self.player_color= player_color
+        self.reset_mini_board(len(PIECE_TYPES[piece_type]))
+        index= (len(PIECE_TYPES[piece_type]), len(PIECE_TYPES[piece_type]))
 
         for offset in PIECE_TYPES[piece_type]:
-            self.place_piece_on_mini_board(True, index[0] + offset[0], index[1] + offset[1])
+            self.place_piece_on_mini_board(False, index[0] + offset[0], index[1] + offset[1])
 
         print("PIECE:", piece_type)
         self.display_mini_board()  # default orientation shown when just displaying the piece before orientation
 
     def display_possible_orientations(self, piece_type, player_color):
-        ''' Displays all the possible orientations the user could choose 
+        ''' Displays all the possible orientations the user could choose
             from the selected piece type.
         '''
-        self.player_color = player_color
+        self.player_color= player_color
         for piece_orientation in ORIENTATIONS:  # ADD ONLY VALID ORIENTATIONS here.... -> valid(ORIENTATIONS)
-            mini_board = self.reset_mini_board(len(PIECE_TYPES[piece_type]))
-            index = (len(PIECE_TYPES[piece_type]), len(PIECE_TYPES[piece_type]))
+            self.reset_mini_board(len(PIECE_TYPES[piece_type]))
+            index= (len(PIECE_TYPES[piece_type]), len(PIECE_TYPES[piece_type]))
             for offset in PIECE_TYPES[piece_type]:
                 if offset == (0, 0):
                     self.place_piece_on_mini_board(True, index[0] + offset[0], index[1] + offset[1])  # Orientation doesn't matter since (0, 0) is the reference point
                 else:
-                    new_x, new_y = self.rotate_piece(index, offset, piece_orientation)
+                    new_x, new_y= self.rotate_piece(index, offset, piece_orientation)
                     self.place_piece_on_mini_board(False, new_x, new_y)
             print("ORIENTATION:", piece_orientation.upper().strip())
             self.display_mini_board()
 
     def place_piece_on_mini_board(self, is_index, x, y):
-        ''' Places piece on only mini board. NOT the actual board. 
-            This is just to help the player visually decide how they 
+        ''' Places piece on only mini board. NOT the actual board.
+            This is just to help the player visually decide how they
             want their piece placed on the main board.
         '''
         if is_index:
-            self.mini_board[y][x] = "X "  # Places X to indicate the connection point/index
+            self.mini_board[y][x]= "X "  # Places X to indicate the connection point/index
         else:
-            self.mini_board[y][x] = self.player_color
+            self.mini_board[y][x]= self.player_color
 
     def display_mini_board(self):
         ''' Displays piece type only on the mini board

@@ -22,19 +22,16 @@ class Player:
         self.player_score = 0
         self.current_pieces = list(GAME_PIECE_VALUES.keys())  # Gives all piece names to player when game starts
 
-    def get_pieces(self):
-        return self.current_pieces
-
-    def get_color(self):
-        return self.color
-
     def prompt(self):
         ''' Asks for the type of piece, where to place that piece (index),
             and what orientation they want that piece in. Returns requested
             update to the board only if all info is valid.
         '''
+        all_valid_moves = self.board_state.get_all_valid_moves(self.player_color, self.current_pieces)  # Gets master dict of all valid moves including orientations for the current player's color {(x,y):['orientations']}
+        print("VALID MOVES w/ ORIENTATIONS:\n", all_valid_moves, sep="")
+
         piece_type = self.prompt_type()
-        index = self.prompt_index(piece_type)
+        index = self.prompt_index(all_valid_moves, piece_type)  # Passing in only valid indexes (don't need orientations for this method)
         orientation = self.prompt_orientation(piece_type)
 
         if self.check_validity(piece_type, index, orientation):
@@ -54,20 +51,19 @@ class Player:
             else:
                 print("You selected an invalid piece or piece you don't have! Try again.")
 
-    def prompt_index(self, piece_type):
+    def prompt_index(self, all_valid_moves, piece_type):
         while True:
-            valid_moves = self.board_state.get_valid_moves(piece_type, self.player_color)
+            valid_indexes = []
             print("\nCurrent available indexes to choose from with your selected piece: ")
-            for count, point in enumerate(valid_moves):
-                if count % 7 == 0:
-                    print("")
-                print("(", point[0], ",", point[1], ")  ", sep="", end="")
+            for count, (index, _) in enumerate(all_valid_moves[piece_type]):  # Indexed at zero to exclude orientation in output
+                valid_indexes.append((index[0], index[1]))
+                print("(", index[0] + 1, ", ", index[1] + 1, ")  ", sep="", end="")  # Add 1 to exclude 0 index
 
             print("\nWhere would you like to place your piece?")
             x = int(input("X Coordinate: ")) - 1  # Subtracting by one because of index 0
             y = int(input("Y Coordinate: ")) - 1
 
-            if (x, y) in valid_moves:
+            if (x, y) in valid_indexes:  # Valid indexes holds the raw valid index accounting for zero
                 return (x, y)
             else:
                 print("You selected an invalid coordinate. Try again.")
