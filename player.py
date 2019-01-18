@@ -28,25 +28,23 @@ class Player:
             update to the board only if all info is valid.
         '''
         all_valid_moves = self.board_state.get_all_valid_moves(self.player_color, self.current_pieces)  # Gets master dict of all valid moves including orientations for the current player's color {(x,y):['orientations']}
-        print("VALID MOVES w/ ORIENTATIONS:\n", all_valid_moves, sep="")
 
-        piece_type = self.prompt_type()
+        piece_type = self.prompt_type(all_valid_moves)
         index = self.prompt_index(all_valid_moves, piece_type)  # Passing in only valid indexes (don't need orientations for this method)
-        orientation = self.prompt_orientation(piece_type)
+        orientation = self.prompt_orientation(all_valid_moves, piece_type, index)
 
-        if self.check_validity(piece_type, index, orientation):
-            self.current_pieces.remove(piece_type)  # Removes chosen piece from the player's current available pieces
-            self.update_score(piece_type)
-            return self.player_color, index, piece_type, orientation
+        self.current_pieces.remove(piece_type)  # Removes chosen piece from the player's current available pieces
+        self.update_score(piece_type)
+        return self.player_color, index, piece_type, orientation
 
-    def prompt_type(self):
+    def prompt_type(self, all_valid_moves):
         while True:
-            piece_type = input("\nWhat piece type you like to place? (enter name of piece or 'SHOW' to show available pieces): ").upper().strip()
+            piece_type = input("\nWhat piece type you like to place? (enter name of piece or 'SHOW' to show your available pieces): ").upper().strip()
             print()
             if piece_type == "SHOW":
                 for piece in self.current_pieces:
                     self.board_state.display_piece(piece, self.player_color)  # Displays all the pieces the current player has to console
-            elif piece_type.lower() in self.current_pieces:
+            elif piece_type.lower() in list(all_valid_moves.keys()):
                 return piece_type.lower()
             else:
                 print("You selected an invalid piece or piece you don't have! Try again.")
@@ -68,33 +66,20 @@ class Player:
             else:
                 print("You selected an invalid coordinate. Try again.")
 
-    def prompt_orientation(self, piece_type):
+    def prompt_orientation(self, all_valid_moves, piece_type, index):
         while True:
             see_orientations = input("Would you like to see the list of valid orientations you can make? Y/[N]: ").upper()
             if see_orientations == "Y":
                 self.board_state.display_possible_orientations(piece_type, self.player_color)
-            orientation = input("Which orientation do you want your piece? ")
+            user_orientation = input("Which orientation do you want your piece? ").lower().strip()
 
-            if orientation in ORIENTATIONS:
-                return orientation
-            else:
-                print("You specified an erronous or invalid orientation. Try again.")
-
-    def check_validity(self, piece_type, index, orientation):
-        ''' Checks if requested piece placement is a valid placement on the board.
-        '''
-        return True
+            for index in all_valid_moves[piece_type]:
+                for orientation in index[1]:
+                    if user_orientation == orientation:
+                        return orientation
+            print("You specified an erronous or invalid orientation. Try again.")
 
     def update_score(self, piece_type):
         ''' Updates overall player score by amount the piece type is worth
         '''
         self.player_score += GAME_PIECE_VALUES[piece_type]
-
-    # check_validity (parameter: current state of the board and piece you want to place and where)
-    # - gather list of valid moves
-    # - check if provided piece placement in valid list
-    # - if in list, go to next step, otherwise prompt user again
-
-    # return valid coords to main, to be used to place on board
-
-    # record score for this player
