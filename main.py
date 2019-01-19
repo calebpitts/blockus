@@ -31,13 +31,13 @@ def main():
     # Continously loops though game and each player's turn until end game
     for current_player in itertools.cycle(all_players):
         current_board.display_board(current_player, all_players, round_count)
-        # EXAMPLE: myboard.update_board("R ", (4, 4), "pentominoe6", "north")
-        color, index, piece_type, orientation = current_player.prompt(round_count)
-        current_board.update_board(color, index, piece_type, orientation)
+        color, piece_type, index, orientation = current_player.prompt_turn(round_count)
+        current_board.update_board(color, piece_type, index, orientation)
 
         if current_player.player_color == "Y ":  # Increment round count each time last player's turn is done.
             round_count += 1
 
+        # Check if endgame
         if end_game:
             break
 
