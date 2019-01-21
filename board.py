@@ -1,3 +1,4 @@
+from collections import defaultdict
 import math
 
 # {key - piece name: val - offsets from index (assuming piece oriented east)}
@@ -51,18 +52,15 @@ class Board:
         self.player_color = player_color
         for offset in PIECE_TYPES[piece_type]:
             if offset == (0, 0):
-                self.place_piece(True, index[0] + offset[0], index[1] + offset[1])  # Orientation doesn't matter since (0, 0) is the reference point
+                self.place_piece(index[0] + offset[0], index[1] + offset[1])  # Orientation doesn't matter since (0, 0) is the reference point
             else:
                 new_x, new_y = self.rotate_piece(index, offset, piece_orientation)
-                self.place_piece(False, new_x, new_y)
+                self.place_piece(new_x, new_y)
 
-    def place_piece(self, is_index, x, y):
+    def place_piece(self, x, y):
         ''' Places piece on board by filling board_contents with the current player color
         '''
-        if is_index:
-            self.board_contents[y][x] = "X "  # Highlights index point (for visual reference)
-        else:
-            self.board_contents[y][x] = self.player_color
+        self.board_contents[y][x] = self.player_color
 
     #### PIECE ORIENTATION METHODS ####
     def rotate_piece(self, index, offset, piece_orientation):
@@ -119,39 +117,36 @@ class Board:
     def fetch_valid_piece_types(self, all_valid_moves):
         ''' Gathers valid piece types from all valid moves
         '''
-        valid_piece_types = []
-        for piece_type in list(all_valid_moves.keys()):
-            valid_piece_types.append(piece_type)
-
-        return valid_piece_types
+        return list(all_valid_moves.keys())
 
     def fetch_valid_indexes(self, all_valid_moves, piece_type):
         ''' Gathers valid indexes associated with a given piece_type from all valid moves
         '''
-        valid_indexes = []
-        for count, (index, _) in enumerate(all_valid_moves[piece_type]):
-            valid_indexes.append((index[0], index[1]))
+        # valid_indexes = []
+        return list(all_valid_moves[piece_type].keys())
 
-        return valid_indexes
+        # return valid_indexes
 
     def fetch_valid_orientations(self, all_valid_moves, piece_type, index):
         ''' Gathers valid orientations associated with a given piece_type and given index from all valid moves
         '''
-        valid_orientations = []
-        for index_block in all_valid_moves[piece_type]:
-            if index_block[0] == index:  # index_block[0] is the index coord tuples associated with piece_type
-                for orientation in index_block[1]:
-                    valid_orientations.append(orientation)
-
-        return valid_orientations
+        # valid_orientations = []
+        return all_valid_moves[piece_type][index]  # Loops through all orientations of the desired piece type and index.
 
     def check_valid_corner(self, player_color, row_num, col_num):
         ''' Checks if cell lines up with a corner piece that is the same color as the current player.
             Returns True if it satisfies the above conditions, False otherwise.
         '''
-        player_color = "R "
-
+        ##############################################################################
         if row_num - 1 < 0 or row_num + 1 > 19 or col_num - 1 < 0 or col_num + 1 > 19:
+            return False
+        ##############################################################################
+
+        # Adjacent Checks (Top, Left, Right, Bottom) - If at least one adjacent piece is same color, then invalid index
+        if (self.board_contents[row_num - 1][col_num] == player_color or
+            self.board_contents[row_num][col_num - 1] == player_color or
+            self.board_contents[row_num][col_num + 1] == player_color or
+                self.board_contents[row_num + 1][col_num] == player_color):
             return False
 
         # Corner Checks (Topright, Topleft, Bottomright, Bottomleft) - If at least one corner is same color, then valid potential index
@@ -160,13 +155,6 @@ class Board:
             self.board_contents[row_num + 1][col_num + 1] == player_color or
                 self.board_contents[row_num + 1][col_num - 1] == player_color):
             return True
-
-        # Adjacent Checks (Top, Left, Right, Bottom) - If at least one adjacent piece is same color, then invalid index
-        if (self.board_contents[row_num - 1][col_num] == player_color
-            or self.board_contents[row_num][col_num - 1] == player_color
-            or self.board_contents[row_num][col_num + 1] == player_color
-                or self.board_contents[row_num + 1][col_num] == player_color):
-            return False
 
     def gather_empty_corner_indexes(self, player_color):
         ''' Returns a list of tuples with the indexes of empty corner cells that connect to the player's color.
@@ -181,37 +169,67 @@ class Board:
 
         return empty_corner_indexes
 
-    ####################### IN PROGRESS #############################
-    def get_initial_valid_moves(self, player_color, player_pieces):
-        ''' Gathers all valid moves in the inital round of the game
+    def check_cell(self, x, y):
+        ''' Checks if cell is empty. If empty return FALSE, otherwise TRUE
+            If provided coordinates are out of bounds of the board, return FALSE
         '''
-        all_initial_valid_moves = {"domino1": [((0, 0), ["south", "east"]), ((19, 19), ["north", "west"])],
-                                   "pentominoe6": [((19, 19), ["north", "west"])]}
+        if x < 0 or x >= 20 or y < 0 or y >= 20:  # If out of bounds..
+            return False
+        elif self.board_contents[y][x] != ". ":
+            return False
 
-        return all_initial_valid_moves
+        return True
 
-    def get_all_valid_moves(self, player_color, player_pieces):
+    def check_board(self, player_color, piece_type, index, orientation):
+        ''' Takes index point and checks all its offsets to determine if the piece at its given orientation can be placed.
+            Does NOT alter the state of the board. Only checks whether piece placement is possible.
+            Returns FALSE if ANY offsetted cell is non-empty, returns TRUE otherwise
+        '''
+        for offset in PIECE_TYPES[piece_type]:
+            if offset == (0, 0):  # Don't need to rotate coord since its the index and there is no offset
+                if self.check_cell(index[0], index[1]) == False:
+                    return False
+            else:
+                new_x, new_y = self.rotate_piece(index, offset, orientation)
+                if self.check_cell(new_x, new_y) == False:
+                    return False
+
+        return True
+
+    ####################### IN PROGRESS #############################
+    def check_corners(self, corners_coords):
+        ''' Checks what corners are still available to play in the first round of the game
+        '''
+        empty_corners = []
+        for corner in corners_coords:
+            if self.check_cell(corner[0], corner[1]):
+                empty_corners.append((corner[0], corner[1]))
+        return empty_corners
+
+    def get_all_valid_moves(self, round_count, player_color, player_pieces):
         ''' Gathers all valid moves on the board that meet the following criteria:
             - Index of selected piece touches same-colored corner of a piece
             - Player piece does not fall outside of the board
             - Player piece does not overlap any of their pieces or other opponent pieces
             - May lay adjacent to another piece as long as its another color
         '''
-        empty_corner_indexes = self.gather_empty_corner_indexes(player_color)
-        print("EMPTY CORNER INDEXES:", empty_corner_indexes)
-        for piece in player_pieces:
+        if round_count == 0:  # If still first round of game..
+            empty_corner_indexes = self.check_corners([(0, 0), (19, 0), (0, 19), (19, 19)])
+        else:
+            empty_corner_indexes = self.gather_empty_corner_indexes(player_color)
+
+        print("EMPTY CORNER INDEXES:", empty_corner_indexes) ####################################### Remove later...
+        all_valid_moves = {}
+        for piece_type in player_pieces:
+            all_index_orientations = defaultdict(list)  # Valid indexes with their valid orientations dict created for every piece
             for index in empty_corner_indexes:
-                pass
-        #############
-        valid_piece = "domino1"  # get all pieces where there is at least one valid move
-        valid_point = (0, 0)
-        valid_orientation = "south"
-        all_valid_moves = {valid_piece: [(valid_point, [valid_orientation, "east"])],
-                           "pentominoe11": [((7, 7), ["south", "north", "northwest"])]}
-        #############
+                for orientation in ORIENTATIONS:
+                    if self.check_board(player_color, piece_type, index, orientation):  # Checks piece placement for every piece's valid index and all possible orientations
+                        all_index_orientations[index].append(orientation)
+            if len(list(all_index_orientations.keys())) > 0:  # If there are valid indexes for the piece type..
+                all_valid_moves[piece_type] = all_index_orientations
 
         return all_valid_moves
-    #################################################################
 
     #### UI AND BOARD PREVIEW METHODS ####
     def display_board(self, current_player, players, round_count):

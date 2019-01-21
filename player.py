@@ -23,31 +23,33 @@ class Player:
         self.player_score = 0
         self.current_pieces = list(GAME_PIECE_VALUES.keys())  # Gives all piece names to player when game starts
 
-    def prompt_turn(self, round_count):
+    def check_moves(self, round_count):
+        self.all_valid_moves = self.board_state.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
+        if len(list(self.all_valid_moves.keys())) == 0:  # If no valid moves available for this player..
+            return False
+        return True
+
+    def prompt_turn(self):
         ''' Asks for the type of piece, where to place that piece (index),
             and what orientation they want that piece in. Returns requested
             update to the board only if all info is valid.
         '''
-        # if round_count == 0:  # If first round, players must place pieces on corners only.
-        #    all_valid_moves = self.board_state.get_initial_valid_moves(self.player_color, self.current_pieces)  # Gets all initial valid moves where only the corners can be played
-        # else:
-        all_valid_moves = self.board_state.get_all_valid_moves(self.player_color, self.current_pieces)  # Gets master dict of all valid moves including orientations for the current player's color {(x,y):['orientations']}
 
-        ################################################################
-        print("VALID MOVES w/ ORIENTATIONS:\n", all_valid_moves, sep="")
-        ################################################################
+        #####################################################################
+        print("VALID MOVES w/ ORIENTATIONS:\n", self.all_valid_moves, sep="")
+        #####################################################################
 
-        piece_type = self.prompt_type(all_valid_moves)
-        index = self.prompt_index(all_valid_moves, piece_type)
-        orientation = self.prompt_orientation(all_valid_moves, piece_type, index)
+        piece_type = self.prompt_type()
+        index = self.prompt_index(piece_type)
+        orientation = self.prompt_orientation(piece_type, index)
         self.update_player(piece_type)
 
         return self.player_color, piece_type, index, orientation
 
-    def prompt_type(self, all_valid_moves):
+    def prompt_type(self):
         ''' Asks user for desired piece type. Loops until valid piece type specified.
         '''
-        valid_piece_types = self.board_state.fetch_valid_piece_types(all_valid_moves)
+        valid_piece_types = self.board_state.fetch_valid_piece_types(self.all_valid_moves)
 
         while True:
             piece_type = input("\nWhat piece type would you like to place? (enter name of piece or 'SHOW' to show your available pieces): ").upper().strip()
@@ -60,10 +62,10 @@ class Player:
             else:
                 print("You selected an invalid piece or piece you don't have! Try again.")
 
-    def prompt_index(self, all_valid_moves, piece_type):
+    def prompt_index(self, piece_type):
         ''' Asks user for desired index of their piece type. Loops until valid index specified.
         '''
-        valid_indexes = self.board_state.fetch_valid_indexes(all_valid_moves, piece_type)
+        valid_indexes = self.board_state.fetch_valid_indexes(self.all_valid_moves, piece_type)
 
         while True:
             print("\nCurrent available indexes to choose from with your selected piece: ")
@@ -81,10 +83,10 @@ class Player:
                 pass
             print("You selected an invalid coordinate. Try again.")
 
-    def prompt_orientation(self, all_valid_moves, piece_type, index):
+    def prompt_orientation(self, piece_type, index):
         ''' Asks user for desired orientation of their piece type and index. Loops until valid orientation specified.
         '''
-        valid_orientations = self.board_state.fetch_valid_orientations(all_valid_moves, piece_type, index)
+        valid_orientations = self.board_state.fetch_valid_orientations(self.all_valid_moves, piece_type, index)
 
         while True:
             see_orientations = input("Would you like to see the list of valid orientations you can make? Y/[N]: ").upper()
