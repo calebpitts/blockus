@@ -34,15 +34,16 @@ def initialize_ai_players(current_board):
     return all_players
 
 
-def display_endgame_results(all_players, round_count):
+def display_endgame_results(current_board, all_players, round_count):
     ''' Displays final round number and final scores for each player
     '''
-    print("\n===================")
-    print("ENDGAME STATISTICS:")
-    print("===================")
-    print("ROUNDS:", round_count, "\n")
+    current_board.display_endgame_board()
     max_score = 0
     winner = "NONE"
+
+    print("\nENDGAME STATISTICS:")
+    print("===================\n")
+
     for current_player in all_players:
         print(current_player.player_color, ": ", current_player.player_score, sep="")
         if current_player.player_score > max_score:
@@ -106,7 +107,7 @@ def ai_game(current_board, all_players):
         if players_with_no_moves == 4:  # If 4 players with no moves, end game
             break
 
-    display_endgame_results(all_players, round_count)
+    display_endgame_results(current_board, all_players, round_count)
 
 
 def main():

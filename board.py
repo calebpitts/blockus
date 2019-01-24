@@ -133,6 +133,7 @@ class Board:
         # valid_orientations = []
         return all_valid_moves[piece_type][index]  # Loops through all orientations of the desired piece type and index.
 
+    ####################### IN PROGRESS #############################
     def check_valid_corner(self, player_color, row_num, col_num):
         ''' Checks if cell lines up with a corner piece that is the same color as the current player.
             Returns True if it satisfies the above conditions, False otherwise.
@@ -142,7 +143,8 @@ class Board:
             return False
         ##############################################################################
 
-        # Adjacent Checks (Top, Left, Right, Bottom) - If at least one adjacent piece is same color, then invalid index
+        # if self.check_adjacents(row_num, col_num, player_color) == False:
+        #    return False
         if (self.board_contents[row_num - 1][col_num] == player_color or
             self.board_contents[row_num][col_num - 1] == player_color or
             self.board_contents[row_num][col_num + 1] == player_color or
@@ -156,6 +158,15 @@ class Board:
                 self.board_contents[row_num + 1][col_num - 1] == player_color):
             return True
 
+    def check_corners(self, corners_coords):
+        ''' Checks what corners are still available to play in the first round of the game
+        '''
+        empty_corners = []
+        for corner in corners_coords:
+            if self.board_contents[corner[1]][corner[0]] == ". ":
+                empty_corners.append((corner[0], corner[1]))
+        return empty_corners
+
     def gather_empty_corner_indexes(self, player_color):
         ''' Returns a list of tuples with the indexes of empty corner cells that connect to the player's color.
             The corner_index is not adjecent/touching any same color tiles on its sides beside its corners.
@@ -165,46 +176,58 @@ class Board:
             for col_num, cell in enumerate(row):
                 if self.board_contents[row_num][col_num] == ". ":                      # Check if cell is empty
                     if self.check_valid_corner(player_color, row_num, col_num):        # If cell lines up with any adjacent piece that is the same color, its an invalid move, otherwise valid
-                        empty_corner_indexes.append((row_num, col_num))
+                        empty_corner_indexes.append((col_num, row_num))
 
         return empty_corner_indexes
 
-    def check_cell(self, x, y):
-        ''' Checks if cell is empty. If empty return FALSE, otherwise TRUE
-            If provided coordinates are out of bounds of the board, return FALSE
+    def is_valid_adjacents(self, row_num, col_num, player_color):
+        # Adjacent Checks (Top, Left, Right, Bottom) - If at least one adjacent piece is same color, then invalid index
+        valid_adjacent = True
+
+        # Exclude top edge
+        if row_num != 0:
+            if self.board_contents[row_num - 1][col_num] == player_color:
+                valid_adjacent = False
+        # Exclude left edge
+        if col_num != 0:
+            if self.board_contents[row_num][col_num - 1] == player_color:
+                valid_adjacent = False
+        # Exclude bottom edge
+        if row_num != 19:
+            if self.board_contents[row_num + 1][col_num] == player_color:
+                valid_adjacent = False
+        # Exclude right edge
+        if col_num != 19:
+            if self.board_contents[row_num][col_num + 1] == player_color:
+                valid_adjacent = False
+
+        return valid_adjacent
+
+    def is_valid_cell(self, x, y, player_color):
+        ''' Checks if cell is empty, has no adjacent cells that are the same color,
+            and whether the given cell is out of bounds of the 20x20 board.
         '''
-        if x < 0 or x >= 20 or y < 0 or y >= 20:  # If out of bounds..
+        if x < 0 or x >= 20 or y < 0 or y >= 20:  # Out of bounds..
             return False
-        elif self.board_contents[y][x] != ". ":
-            return False
+        if (self.board_contents[y][x] == ". " and self.is_valid_adjacents(y, x, player_color)):  # If cell empty and has no adjacent pieces that are the same color, return TRUE
+            return True
+        return False  # Invalid adjacent or space filled already..
 
-        return True
-
-    def check_board(self, player_color, piece_type, index, orientation):
+    def is_valid_move(self, player_color, piece_type, index, orientation):
         ''' Takes index point and checks all its offsets to determine if the piece at its given orientation can be placed.
             Does NOT alter the state of the board. Only checks whether piece placement is possible.
-            Returns FALSE if ANY offsetted cell is non-empty, returns TRUE otherwise
+            Returns FALSE if ANY offsetted cell is invalid.
         '''
         for offset in PIECE_TYPES[piece_type]:
-            if offset == (0, 0):  # Don't need to rotate coord since its the index and there is no offset
-                if self.check_cell(index[0], index[1]) == False:
+            if offset == (0, 0):  # No need to rotate coord since its the index and there is no offset
+                if not self.is_valid_cell(index[0], index[1], player_color):
                     return False
             else:
                 new_x, new_y = self.rotate_piece(index, offset, orientation)
-                if self.check_cell(new_x, new_y) == False:
+                if not self.is_valid_cell(new_x, new_y, player_color):
                     return False
 
         return True
-
-    ####################### IN PROGRESS #############################
-    def check_corners(self, corners_coords):
-        ''' Checks what corners are still available to play in the first round of the game
-        '''
-        empty_corners = []
-        for corner in corners_coords:
-            if self.check_cell(corner[0], corner[1]):
-                empty_corners.append((corner[0], corner[1]))
-        return empty_corners
 
     def get_all_valid_moves(self, round_count, player_color, player_pieces):
         ''' Gathers all valid moves on the board that meet the following criteria:
@@ -218,13 +241,13 @@ class Board:
         else:
             empty_corner_indexes = self.gather_empty_corner_indexes(player_color)
 
-        print("EMPTY CORNER INDEXES:", empty_corner_indexes) ####################################### Remove later...
+        print("EMPTY CORNER INDEXES:", empty_corner_indexes)  # Remove later...
         all_valid_moves = {}
         for piece_type in player_pieces:
             all_index_orientations = defaultdict(list)  # Valid indexes with their valid orientations dict created for every piece
             for index in empty_corner_indexes:
                 for orientation in ORIENTATIONS:
-                    if self.check_board(player_color, piece_type, index, orientation):  # Checks piece placement for every piece's valid index and all possible orientations
+                    if self.is_valid_move(player_color, piece_type, index, orientation):  # Checks if piece placement for every piece's valid index and all possible orientations is a valid move
                         all_index_orientations[index].append(orientation)
             if len(list(all_index_orientations.keys())) > 0:  # If there are valid indexes for the piece type..
                 all_valid_moves[piece_type] = all_index_orientations
@@ -249,6 +272,20 @@ class Board:
         print("ROUND:", str(round_count), "            CURRENT PLAYER:", current_player.player_color)
         print("======================================")
         print("SCORES:  R =", players[0].player_score, "| B =", players[1].player_score, "| G =", players[2].player_score, "| Y =", players[3].player_score)
+
+    def display_endgame_board(self):
+        ''' Prints out contents of board at the end of the game.
+        '''
+        print("\n======================== FINAL BOARD ========================")
+        for count, row in enumerate(self.board_contents):
+            if count == 0:
+                print("   1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20")
+            if count < 9:
+                print(count + 1, " ", end="")
+                print(*row)
+            else:
+                print(count + 1, *row)
+        print("\n=============================================================")
 
     #### MINI BOARD SECTION ####
     def reset_mini_board(self, size):
