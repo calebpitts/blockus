@@ -48,6 +48,7 @@ def display_endgame_results(current_board, all_players, round_count):
         print(current_player.player_color, ": ", current_player.player_score, sep="")
         if current_player.player_score > max_score:
             winner = current_player.player_color
+        print("PIECES REMAINING: ", current_player.current_pieces)
     print("WINNER:", winner)
 
 
@@ -61,6 +62,7 @@ def user_game(current_board, all_players):
         moves_present = current_player.check_moves(round_count)  # Checks if player can make any moves
 
         if moves_present:  # If current player can make at least one move..
+            players_with_no_moves = 0  # Reset no_moves counter since at least one player could make move
             current_board.display_board(current_player, all_players, round_count)
             color, piece_type, index, orientation = current_player.prompt_turn()
             current_board.update_board(color, piece_type, index, orientation, round_count)
@@ -87,7 +89,9 @@ def ai_game(current_board, all_players):
         all_valid_moves = current_player.collect_moves(round_count)
 
         if len(list(all_valid_moves.keys())) > 0:  # If no valid moves available for this player.
+            players_with_no_moves = 0  # Reset to zero if at least one player can make a move
             current_board.display_board(current_player, all_players, round_count)
+            print("VALID MOVES FOR", current_player.player_color, ":", all_valid_moves)
 
             # Get all valid moves and ai decides on which one to make
             random_indexes = random.sample(all_valid_moves.items(), 1)
@@ -98,7 +102,10 @@ def ai_game(current_board, all_players):
             # ai chooses move
             current_board.update_board(current_player.player_color, piece_type, index, orientation, round_count)
             current_player.update_player(piece_type)  # Updates ai
+            if current_player.player_color == "R ":  # TESITNG ONLY
+                x = input()  # stop - testing only
         else:
+            print("VALID MOVES FOR", current_player.player_color, ":", all_valid_moves)
             players_with_no_moves += 1
 
         if current_player.player_color == "Y ":  # Increment round count each time last player's turn is done.
@@ -107,6 +114,8 @@ def ai_game(current_board, all_players):
         if players_with_no_moves == 4:  # If 4 players with no moves, end game
             break
 
+    # print(current_board.board_contents)
+    # print(current_board.test_contents)
     display_endgame_results(current_board, all_players, round_count)
 
 

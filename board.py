@@ -51,6 +51,9 @@ class Board:
                 row.append(".  ")
             self.test_contents.append(row)
 
+        #self.board_contents = [['R ', 'R ', 'R ', '. ', '. ', 'R ', 'R ', 'R ', 'R ', 'Y ', 'Y ', 'R ', '. ', 'Y ', '. ', 'B ', 'B ', '. ', '. ', 'B '], ['R ', '. ', 'R ', '. ', 'R ', '. ', 'Y ', 'Y ', 'Y ', 'R ', 'R ', 'Y ', 'Y ', '. ', 'B ', '. ', '. ', 'B ', '. ', 'B '], ['. ', 'R ', '. ', 'R ', 'R ', '. ', 'Y ', '. ', 'R ', 'R ', '. ', 'Y ', '. ', 'B ', 'B ', 'B ', '. ', 'B ', '. ', 'B '], ['G ', 'R ', 'R ', 'G ', 'G ', 'R ', 'Y ', '. ', 'R ', '. ', '. ', 'Y ', '. ', 'B ', '. ', '. ', '. ', 'B ', '. ', 'B '], ['G ', 'R ', 'R ', '. ', 'G ', 'R ', '. ', 'Y ', 'Y ', 'Y ', 'Y ', '. ', 'Y ', '. ', 'B ', 'B ', 'B ', '. ', 'B ', '. '], ['G ', 'G ', '. ', 'R ', 'R ', 'G ', 'R ', 'R ', '. ', '. ', '. ', '. ', 'Y ', '. ', 'B ', '. ', 'B ', '. ', '. ', 'B '], ['G ', '. ', '. ', 'R ', 'R ', '. ', 'G ', 'R ', 'R ', 'R ', '. ', '. ', 'Y ', '. ', '. ', 'B ', '. ', '. ', '. ', 'B '], ['. ', 'G ', 'G ', 'G ', '. ', 'R ', 'G ', '. ', '. ', '. ', '. ', 'Y ', 'Y ', '. ', '. ', 'B ', 'B ', '. ', '. ', 'B '], ['G ', '. ', '. ', 'G ', 'R ', 'R ', 'G ', '. ', 'Y ', 'Y ', 'Y ', '. ', '. ', 'Y ', 'Y ', 'B ', '. ', '. ', '. ', 'B '], ['G ', '. ', '. ', 'G ', '. ', 'R ', 'G ', 'G ', 'Y ', '. ', 'Y ', '. ', '. ', 'Y ', '. ', 'B ', '. ', '. ', '. ', 'B '], ['G ', '. ', 'G ', '. ', 'G ', 'G ', 'R ', '. ', 'G ', '. ', '. ', '. ', 'Y ', 'Y ', '. ', '. ', 'B ', 'B ', 'B ', '. '], ['G ', '. ', 'G ', '. ', 'G ', 'G ', 'R ', 'R ', 'G ', '. ', 'Y ', 'Y ', '. ', 'B ', 'Y ', 'B ', '. ', '. ', 'B ', '. '], ['G ', '. ', 'G ', 'G ', '. ', '. ', 'G ', 'R ', 'G ', 'Y ', '. ', 'Y ', 'Y ', 'B ', 'Y ', 'B ', 'B ', '. ', 'B ', '. '], ['. ', 'G ', '. ', '. ', '. ', 'G ', 'G ', 'Y ', 'G ', 'Y ', 'Y ', '. ', 'Y ', 'B ', 'Y ', 'Y ', 'B ', '. ', '. ', 'B '], ['. ', 'G ', '. ', '. ', '. ', 'G ', 'G ', 'Y ', 'Y ', 'G ', 'Y ', '. ', 'B ', 'B ', '. ', 'Y ', 'B ', '. ', 'B ', 'B '], ['G ', 'G ', '. ', '. ', 'G ', '. ', '. ', '. ', 'G ', 'G ', 'G ', 'B ', '. ', '. ', 'B ', 'B ', 'Y ', 'Y ', '. ', 'B '], ['G ', '. ', '. ', '. ', 'G ', '. ', '. ', '. ', '. ', '. ', 'G ', 'B ', 'B ', '. ', 'B ', 'B ', 'Y ', 'Y ', '. ', '. '], ['. ', 'G ', '. ', '. ', 'G ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', 'B ', '. ', '. ', '. ', '. ', 'Y ', '. ', '. '], ['G ', 'G ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', 'Y ', 'Y '], ['G ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', 'Y ', 'Y ']]
+        #self.test_contents = [['R0 ', '.  ', 'R13', '.  ', '.  ', 'R3 ', 'R3 ', 'R3 ', '.  ', 'R5 ', 'R5 ', '.  ', '.  ', 'B2 ', 'B2 ', 'B2 ', 'B2 ', 'B2 ', '.  ', 'B0 '], ['R0 ', '.  ', '.  ', 'R2 ', 'R2 ', '.  ', 'R3 ', 'R3 ', '.  ', 'R5 ', 'Y6 ', 'Y6 ', 'B3 ', '.  ', '.  ', '.  ', '.  ', '.  ', 'B1 ', '.  '], ['.  ', 'R1 ', 'R1 ', '.  ', 'R2 ', 'R2 ', '.  ', '.  ', 'R4 ', '.  ', '.  ', 'Y6 ', 'B3 ', 'B3 ', '.  ', '.  ', 'B7 ', '.  ', 'B1 ', '.  '], ['.  ', 'R1 ', '.  ', '.  ', 'G6 ', 'G6 ', '.  ', '.  ', 'R4 ', '.  ', 'B4 ', 'B4 ', 'Y5 ', 'B3 ', '.  ', 'B7 ', 'B7 ', '.  ', 'B1 ', 'B1 '], ['R1 ', 'R1 ', '.  ', 'G5 ', '.  ', 'G6 ', 'G6 ', 'G6 ', 'R4 ', 'R4 ', '.  ', 'B4 ', 'Y5 ', 'B3 ', '.  ', 'B7 ', '.  ', 'B5 ', '.  ', '.  '], ['G9 ', '.  ', 'R9 ', 'G5 ', '.  ', 'B12', 'B12', 'R6 ', '.  ', '.  ', 'B4 ', 'B4 ', 'Y5 ', '.  ', 'B6 ', '.  ', '.  ', 'B5 ', '.  ', '.  '], ['G9 ', 'R9 ', 'R9 ', 'G5 ', '.  ', 'B12', 'R6 ', 'R6 ', 'R6 ', 'Y7 ', 'Y7 ', 'Y7 ', 'B9 ', 'Y4 ', 'B6 ', 'Y8 ', '.  ', '.  ', 'B8 ', 'B8 '], ['G9 ', '.  ', 'R9 ', 'G5 ', 'R7 ', 'R7 ', 'B11', 'B11', 'R6 ', 'Y7 ', '.  ', '.  ', 'B9 ', 'Y4 ', 'B6 ', 'Y8 ', 'Y8 ', 'Y8 ', 'B8 ', 'B8 '], ['.  ', 'G4 ', 'G4 ', '.  ', '.  ', 'R7 ', 'R7 ', 'B11', 'B11', 'Y7 ', 'B9 ', 'B9 ', 'B9 ', 'Y4 ', 'Y4 ', '.  ', '.  ', 'Y8 ', '.  ', '.  '], ['.  ', 'G4 ', 'G4 ', '.  ', '.  ', '.  ', 'R7 ', 'B11', '.  ', 'B10', 'Y9 ', '.  ', '.  ', '.  ', 'Y4 ', '.  ', '.  ', '.  ', 'Y14', 'Y14'], ['G3 ', '.  ', '.  ', 'G7 ', 'G7 ', 'G7 ', '.  ', 'R8 ', 'B10', 'B10', 'Y9 ', 'Y9 ', '.  ', 'Y10', '.  ', 'Y3 ', '.  ', '.  ', 'Y14', 'Y14'], ['.  ', 'G2 ', '.  ', 'G7 ', '.  ', 'G7 ', '.  ', 'R8 ', 'R8 ', 'B10', 'Y9 ', 'Y9 ', 'G13', 'Y10', '.  ', 'Y3 ', 'Y3 ', 'Y3 ', '.  ', '.  '], ['.  ', 'G2 ', 'G2 ', '.  ', 'G8 ', '.  ', 'R10', '.  ', 'R8 ', '.  ', '.  ', 'R11', 'G13', 'Y10', 'Y10', '.  ', 'Y3 ', '.  ', '.  ', 'Y13'], ['.  ', '.  ', 'G2 ', '.  ', 'G8 ', 'G8 ', 'R10', '.  ', 'R8 ', '.  ', '.  ', 'R11', 'G13', '.  ', '.  ', 'Y11', '.  ', 'Y2 ', '.  ', 'Y13'], ['G1 ', 'G1 ', '.  ', '.  ', 'G8 ', '.  ', 'R10', '.  ', '.  ', 'R11', 'R11', 'R11', 'G13', 'G13', 'Y11', 'Y11', '.  ', 'Y2 ', '.  ', 'Y13'], ['.  ', 'G1 ', '.  ', '.  ', 'G8 ', '.  ', 'R10', '.  ', '.  ', '.  ', 'G11', 'G11', 'R12', 'Y11', 'Y11', '.  ', 'Y2 ', 'Y2 ', '.  ', 'Y13'], ['.  ', 'G1 ', 'G1 ', '.  ', '.  ', 'G10', 'G10', 'G10', 'G10', 'G10', '.  ', 'G11', 'R12', '.  ', '.  ', 'Y12', '.  ', 'Y2 ', '.  ', 'Y13'], ['G0 ', '.  ', '.  ', '.  ', 'G12', '.  ', '.  ', '.  ', '.  ', '.  ', 'G14', '.  ', 'R12', '.  ', '.  ', 'Y12', 'Y12', '.  ', 'Y1 ', '.  '], ['G0 ', 'G0 ', '.  ', 'G12', 'G12', 'G12', '.  ', '.  ', '.  ', '.  ', 'G14', '.  ', 'R12', '.  ', '.  ', 'Y12', '.  ', '.  ', '.  ', 'Y0 '], ['G0 ', '.  ', '.  ', '.  ', '.  ', 'G12', '.  ', '.  ', '.  ', '.  ', 'G14', 'G14', 'R12', '.  ', '.  ', '.  ', '.  ', '.  ', '.  ', 'Y0 ']]
+
     def update_board(self, player_color, piece_type, index, piece_orientation, round_count):
         ''' Takes index point and places piece_type on board
             index[0] = x coord
@@ -69,7 +72,7 @@ class Board:
         '''
         self.board_contents[y][x] = self.player_color
         if round_count < 10:
-            self.test_contents[y][x] = self.player_color.strip() + str(round_count) + " " # TESTING ONLY
+            self.test_contents[y][x] = self.player_color.strip() + str(round_count) + " "  # TESTING ONLY
         else:
             self.test_contents[y][x] = self.player_color.strip() + str(round_count)   # TESTING ONLY
 
@@ -122,7 +125,8 @@ class Board:
         ''' Takes the difference between index y and point y, then applies reverse
             difference to the index point. x stays the same
         '''
-        return x, index[0] - (index[0] - y) * -1
+        # return x, index[0] - (index[0] - y) * -1
+        return x, index[1] + (y - index[1]) * -1
 
     # VALID MOVE METHODS ####  ->  IN PROGRESS
     def gather_empty_board_corners(self, corners_coords):
@@ -247,6 +251,8 @@ class Board:
                         all_index_orientations[index].append(orientation)
             if len(list(all_index_orientations.keys())) > 0:  # If there are valid indexes for the piece type..
                 all_valid_moves[piece_type] = all_index_orientations
+
+        #all_valid_moves = {'pentominoe8': {(14, 13): ['northwest', 'west'], (17, 13): ['north'], (12, 16): ['northwest', 'west', 'southwest', 'northeast'], (12, 19): ['southwest', 'northeast'], (14, 19): ['southwest', 'northeast']}, 'pentominoe11': {(12, 16): ['southwest', 'northeast'], (12, 19): ['southwest', 'northeast'], (14, 19): ['southwest', 'northeast']}, 'pentominoe12': {(14, 13): ['north', 'northwest', 'west', 'southwest'], (17, 13): ['north', 'northwest'], (14, 15): ['southwest'], (19, 15): ['north'], (12, 16): ['north', 'northwest', 'west', 'southwest', 'northeast'], (12, 19): ['southwest', 'northeast'], (14, 19): ['southwest', 'northeast']}}
 
         return all_valid_moves
 
