@@ -32,11 +32,6 @@ class Player:
             and what orientation they want that piece in. Returns requested
             update to the board only if all info is valid.
         '''
-
-        #####################################################################
-        print("VALID MOVES w/ ORIENTATIONS:\n", self.all_valid_moves, sep="")
-        #####################################################################
-
         piece_type = self.prompt_type()
         index = self.prompt_index(piece_type)
         orientation = self.prompt_orientation(piece_type, index)
@@ -113,3 +108,8 @@ class Player:
         ''' Returns the current player's score
         '''
         return self.player_score
+
+    def display_valid_moves(self):
+        ''' Prints valid moves list to console. Mainly for testing. 
+        '''
+        print("VALID MOVES:\n", self.all_valid_moves, sep="")

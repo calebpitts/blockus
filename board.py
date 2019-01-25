@@ -39,22 +39,22 @@ class Board:
         '''
         self.board_contents = []
         self.test_contents = []
+
+        # Main board
         for _ in range(20):
             row = []
             for _ in range(20):
                 row.append(". ")
             self.board_contents.append(row)
 
+        # Test board for AI process visualization
         for _ in range(20):
             row = []
             for _ in range(20):
                 row.append(".  ")
             self.test_contents.append(row)
 
-        #self.board_contents = [['R ', 'R ', 'R ', '. ', '. ', 'R ', 'R ', 'R ', 'R ', 'Y ', 'Y ', 'R ', '. ', 'Y ', '. ', 'B ', 'B ', '. ', '. ', 'B '], ['R ', '. ', 'R ', '. ', 'R ', '. ', 'Y ', 'Y ', 'Y ', 'R ', 'R ', 'Y ', 'Y ', '. ', 'B ', '. ', '. ', 'B ', '. ', 'B '], ['. ', 'R ', '. ', 'R ', 'R ', '. ', 'Y ', '. ', 'R ', 'R ', '. ', 'Y ', '. ', 'B ', 'B ', 'B ', '. ', 'B ', '. ', 'B '], ['G ', 'R ', 'R ', 'G ', 'G ', 'R ', 'Y ', '. ', 'R ', '. ', '. ', 'Y ', '. ', 'B ', '. ', '. ', '. ', 'B ', '. ', 'B '], ['G ', 'R ', 'R ', '. ', 'G ', 'R ', '. ', 'Y ', 'Y ', 'Y ', 'Y ', '. ', 'Y ', '. ', 'B ', 'B ', 'B ', '. ', 'B ', '. '], ['G ', 'G ', '. ', 'R ', 'R ', 'G ', 'R ', 'R ', '. ', '. ', '. ', '. ', 'Y ', '. ', 'B ', '. ', 'B ', '. ', '. ', 'B '], ['G ', '. ', '. ', 'R ', 'R ', '. ', 'G ', 'R ', 'R ', 'R ', '. ', '. ', 'Y ', '. ', '. ', 'B ', '. ', '. ', '. ', 'B '], ['. ', 'G ', 'G ', 'G ', '. ', 'R ', 'G ', '. ', '. ', '. ', '. ', 'Y ', 'Y ', '. ', '. ', 'B ', 'B ', '. ', '. ', 'B '], ['G ', '. ', '. ', 'G ', 'R ', 'R ', 'G ', '. ', 'Y ', 'Y ', 'Y ', '. ', '. ', 'Y ', 'Y ', 'B ', '. ', '. ', '. ', 'B '], ['G ', '. ', '. ', 'G ', '. ', 'R ', 'G ', 'G ', 'Y ', '. ', 'Y ', '. ', '. ', 'Y ', '. ', 'B ', '. ', '. ', '. ', 'B '], ['G ', '. ', 'G ', '. ', 'G ', 'G ', 'R ', '. ', 'G ', '. ', '. ', '. ', 'Y ', 'Y ', '. ', '. ', 'B ', 'B ', 'B ', '. '], ['G ', '. ', 'G ', '. ', 'G ', 'G ', 'R ', 'R ', 'G ', '. ', 'Y ', 'Y ', '. ', 'B ', 'Y ', 'B ', '. ', '. ', 'B ', '. '], ['G ', '. ', 'G ', 'G ', '. ', '. ', 'G ', 'R ', 'G ', 'Y ', '. ', 'Y ', 'Y ', 'B ', 'Y ', 'B ', 'B ', '. ', 'B ', '. '], ['. ', 'G ', '. ', '. ', '. ', 'G ', 'G ', 'Y ', 'G ', 'Y ', 'Y ', '. ', 'Y ', 'B ', 'Y ', 'Y ', 'B ', '. ', '. ', 'B '], ['. ', 'G ', '. ', '. ', '. ', 'G ', 'G ', 'Y ', 'Y ', 'G ', 'Y ', '. ', 'B ', 'B ', '. ', 'Y ', 'B ', '. ', 'B ', 'B '], ['G ', 'G ', '. ', '. ', 'G ', '. ', '. ', '. ', 'G ', 'G ', 'G ', 'B ', '. ', '. ', 'B ', 'B ', 'Y ', 'Y ', '. ', 'B '], ['G ', '. ', '. ', '. ', 'G ', '. ', '. ', '. ', '. ', '. ', 'G ', 'B ', 'B ', '. ', 'B ', 'B ', 'Y ', 'Y ', '. ', '. '], ['. ', 'G ', '. ', '. ', 'G ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', 'B ', '. ', '. ', '. ', '. ', 'Y ', '. ', '. '], ['G ', 'G ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', 'Y ', 'Y '], ['G ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', '. ', 'Y ', 'Y ']]
-        #self.test_contents = [['R0 ', '.  ', 'R13', '.  ', '.  ', 'R3 ', 'R3 ', 'R3 ', '.  ', 'R5 ', 'R5 ', '.  ', '.  ', 'B2 ', 'B2 ', 'B2 ', 'B2 ', 'B2 ', '.  ', 'B0 '], ['R0 ', '.  ', '.  ', 'R2 ', 'R2 ', '.  ', 'R3 ', 'R3 ', '.  ', 'R5 ', 'Y6 ', 'Y6 ', 'B3 ', '.  ', '.  ', '.  ', '.  ', '.  ', 'B1 ', '.  '], ['.  ', 'R1 ', 'R1 ', '.  ', 'R2 ', 'R2 ', '.  ', '.  ', 'R4 ', '.  ', '.  ', 'Y6 ', 'B3 ', 'B3 ', '.  ', '.  ', 'B7 ', '.  ', 'B1 ', '.  '], ['.  ', 'R1 ', '.  ', '.  ', 'G6 ', 'G6 ', '.  ', '.  ', 'R4 ', '.  ', 'B4 ', 'B4 ', 'Y5 ', 'B3 ', '.  ', 'B7 ', 'B7 ', '.  ', 'B1 ', 'B1 '], ['R1 ', 'R1 ', '.  ', 'G5 ', '.  ', 'G6 ', 'G6 ', 'G6 ', 'R4 ', 'R4 ', '.  ', 'B4 ', 'Y5 ', 'B3 ', '.  ', 'B7 ', '.  ', 'B5 ', '.  ', '.  '], ['G9 ', '.  ', 'R9 ', 'G5 ', '.  ', 'B12', 'B12', 'R6 ', '.  ', '.  ', 'B4 ', 'B4 ', 'Y5 ', '.  ', 'B6 ', '.  ', '.  ', 'B5 ', '.  ', '.  '], ['G9 ', 'R9 ', 'R9 ', 'G5 ', '.  ', 'B12', 'R6 ', 'R6 ', 'R6 ', 'Y7 ', 'Y7 ', 'Y7 ', 'B9 ', 'Y4 ', 'B6 ', 'Y8 ', '.  ', '.  ', 'B8 ', 'B8 '], ['G9 ', '.  ', 'R9 ', 'G5 ', 'R7 ', 'R7 ', 'B11', 'B11', 'R6 ', 'Y7 ', '.  ', '.  ', 'B9 ', 'Y4 ', 'B6 ', 'Y8 ', 'Y8 ', 'Y8 ', 'B8 ', 'B8 '], ['.  ', 'G4 ', 'G4 ', '.  ', '.  ', 'R7 ', 'R7 ', 'B11', 'B11', 'Y7 ', 'B9 ', 'B9 ', 'B9 ', 'Y4 ', 'Y4 ', '.  ', '.  ', 'Y8 ', '.  ', '.  '], ['.  ', 'G4 ', 'G4 ', '.  ', '.  ', '.  ', 'R7 ', 'B11', '.  ', 'B10', 'Y9 ', '.  ', '.  ', '.  ', 'Y4 ', '.  ', '.  ', '.  ', 'Y14', 'Y14'], ['G3 ', '.  ', '.  ', 'G7 ', 'G7 ', 'G7 ', '.  ', 'R8 ', 'B10', 'B10', 'Y9 ', 'Y9 ', '.  ', 'Y10', '.  ', 'Y3 ', '.  ', '.  ', 'Y14', 'Y14'], ['.  ', 'G2 ', '.  ', 'G7 ', '.  ', 'G7 ', '.  ', 'R8 ', 'R8 ', 'B10', 'Y9 ', 'Y9 ', 'G13', 'Y10', '.  ', 'Y3 ', 'Y3 ', 'Y3 ', '.  ', '.  '], ['.  ', 'G2 ', 'G2 ', '.  ', 'G8 ', '.  ', 'R10', '.  ', 'R8 ', '.  ', '.  ', 'R11', 'G13', 'Y10', 'Y10', '.  ', 'Y3 ', '.  ', '.  ', 'Y13'], ['.  ', '.  ', 'G2 ', '.  ', 'G8 ', 'G8 ', 'R10', '.  ', 'R8 ', '.  ', '.  ', 'R11', 'G13', '.  ', '.  ', 'Y11', '.  ', 'Y2 ', '.  ', 'Y13'], ['G1 ', 'G1 ', '.  ', '.  ', 'G8 ', '.  ', 'R10', '.  ', '.  ', 'R11', 'R11', 'R11', 'G13', 'G13', 'Y11', 'Y11', '.  ', 'Y2 ', '.  ', 'Y13'], ['.  ', 'G1 ', '.  ', '.  ', 'G8 ', '.  ', 'R10', '.  ', '.  ', '.  ', 'G11', 'G11', 'R12', 'Y11', 'Y11', '.  ', 'Y2 ', 'Y2 ', '.  ', 'Y13'], ['.  ', 'G1 ', 'G1 ', '.  ', '.  ', 'G10', 'G10', 'G10', 'G10', 'G10', '.  ', 'G11', 'R12', '.  ', '.  ', 'Y12', '.  ', 'Y2 ', '.  ', 'Y13'], ['G0 ', '.  ', '.  ', '.  ', 'G12', '.  ', '.  ', '.  ', '.  ', '.  ', 'G14', '.  ', 'R12', '.  ', '.  ', 'Y12', 'Y12', '.  ', 'Y1 ', '.  '], ['G0 ', 'G0 ', '.  ', 'G12', 'G12', 'G12', '.  ', '.  ', '.  ', '.  ', 'G14', '.  ', 'R12', '.  ', '.  ', 'Y12', '.  ', '.  ', '.  ', 'Y0 '], ['G0 ', '.  ', '.  ', '.  ', '.  ', 'G12', '.  ', '.  ', '.  ', '.  ', 'G14', 'G14', 'R12', '.  ', '.  ', '.  ', '.  ', '.  ', '.  ', 'Y0 ']]
-
-    def update_board(self, player_color, piece_type, index, piece_orientation, round_count):
+    def update_board(self, player_color, piece_type, index, piece_orientation, round_count, ai_game):
         ''' Takes index point and places piece_type on board
             index[0] = x coord
             index[1] = y coord
@@ -62,19 +62,20 @@ class Board:
         self.player_color = player_color
         for offset in PIECE_TYPES[piece_type]:
             if offset == (0, 0):
-                self.place_piece(index[0] + offset[0], index[1] + offset[1], round_count)  # Orientation doesn't matter since (0, 0) is the reference point
+                self.place_piece(index[0] + offset[0], index[1] + offset[1], round_count, ai_game)  # Orientation doesn't matter since (0, 0) is the reference point
             else:
                 new_x, new_y = self.rotate_piece(index, offset, piece_orientation)
-                self.place_piece(new_x, new_y, round_count)
+                self.place_piece(new_x, new_y, round_count, ai_game)
 
-    def place_piece(self, x, y, round_count):
+    def place_piece(self, x, y, round_count, ai_game):
         ''' Places piece on board by filling board_contents with the current player color
         '''
         self.board_contents[y][x] = self.player_color
-        if round_count < 10:
-            self.test_contents[y][x] = self.player_color.strip() + str(round_count) + " "  # TESTING ONLY
-        else:
-            self.test_contents[y][x] = self.player_color.strip() + str(round_count)   # TESTING ONLY
+        if ai_game:  # AI game prints corresponding round number next to colored piece for easier reading when loooking at results
+            if round_count < 10:
+                self.test_contents[y][x] = self.player_color.strip() + str(round_count) + " "  # TESTING ONLY
+            else:
+                self.test_contents[y][x] = self.player_color.strip() + str(round_count)   # TESTING ONLY
 
     #### PIECE ORIENTATION METHODS ####
     def rotate_piece(self, index, offset, piece_orientation):
@@ -125,7 +126,6 @@ class Board:
         ''' Takes the difference between index y and point y, then applies reverse
             difference to the index point. x stays the same
         '''
-        # return x, index[0] - (index[0] - y) * -1
         return x, index[1] + (y - index[1]) * -1
 
     # VALID MOVE METHODS ####  ->  IN PROGRESS
@@ -241,7 +241,6 @@ class Board:
         else:
             empty_corner_indexes = self.gather_empty_corner_indexes(player_color)
 
-        print("EMPTY CORNER INDEXES:", empty_corner_indexes)  # Remove later... #######################################
         all_valid_moves = {}
         for piece_type in player_pieces:
             all_index_orientations = defaultdict(list)  # Valid indexes with their valid orientations dict created for every piece
@@ -252,24 +251,32 @@ class Board:
             if len(list(all_index_orientations.keys())) > 0:  # If there are valid indexes for the piece type..
                 all_valid_moves[piece_type] = all_index_orientations
 
-        #all_valid_moves = {'pentominoe8': {(14, 13): ['northwest', 'west'], (17, 13): ['north'], (12, 16): ['northwest', 'west', 'southwest', 'northeast'], (12, 19): ['southwest', 'northeast'], (14, 19): ['southwest', 'northeast']}, 'pentominoe11': {(12, 16): ['southwest', 'northeast'], (12, 19): ['southwest', 'northeast'], (14, 19): ['southwest', 'northeast']}, 'pentominoe12': {(14, 13): ['north', 'northwest', 'west', 'southwest'], (17, 13): ['north', 'northwest'], (14, 15): ['southwest'], (19, 15): ['north'], (12, 16): ['north', 'northwest', 'west', 'southwest', 'northeast'], (12, 19): ['southwest', 'northeast'], (14, 19): ['southwest', 'northeast']}}
-
         return all_valid_moves
 
     #### UI AND BOARD PREVIEW METHODS ####
-    def display_board(self, current_player, players, round_count):
+    def display_board(self, current_player, players, round_count, ai_game):
         ''' Prints out current contents of the board to the console
         '''
-        # print(self.test_contents)
-        print("\n======================= CURRENT BOARD =======================")
-        for count, row in enumerate(self.test_contents):
-            if count == 0:
-                print("   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20")
-            if count < 9:
-                print(count + 1, " ", end="")
-                print(*row)
-            else:
-                print(count + 1, *row)
+        if ai_game:  # AI game prints test board instead of normal game board
+            print("\n======================= CURRENT BOARD =======================")
+            for count, row in enumerate(self.test_contents):
+                if count == 0:
+                    print("   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20")
+                if count < 9:
+                    print(count + 1, " ", end="")
+                    print(*row)
+                else:
+                    print(count + 1, *row)
+        else:
+            print("\n======================= CURRENT BOARD =======================")
+            for count, row in enumerate(self.board_contents):
+                if count == 0:
+                    print("   1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20")
+                if count < 9:
+                    print(count + 1, " ", end="")
+                    print(*row)
+                else:
+                    print(count + 1, *row)
 
         print("\n======================================")
         print("ROUND:", str(round_count), "            CURRENT PLAYER:", current_player.player_color)
