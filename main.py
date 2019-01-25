@@ -14,7 +14,7 @@ def welcome():
     print()
 
 
-def initialize_human_players(current_board):
+def initialize_user_players(current_board):
     red = player.Player(current_board, "R ")
     blue = player.Player(current_board, "B ")
     green = player.Player(current_board, "G ")
@@ -51,7 +51,7 @@ def display_endgame_results(current_board, all_players, round_count):
     print("WINNER:", winner)
 
 
-def human_game(current_board, all_players):
+def user_game(current_board, all_players):
     ''' Continously loops though game and each player's turn until end game
     '''
     round_count = 0
@@ -63,7 +63,7 @@ def human_game(current_board, all_players):
         if moves_present:  # If current player can make at least one move..
             current_board.display_board(current_player, all_players, round_count)
             color, piece_type, index, orientation = current_player.prompt_turn()
-            current_board.update_board(color, piece_type, index, orientation)
+            current_board.update_board(color, piece_type, index, orientation, round_count)
         else:
             players_with_no_moves += 1
 
@@ -96,7 +96,7 @@ def ai_game(current_board, all_players):
             orientation = all_valid_moves[piece_type][index][0]
 
             # ai chooses move
-            current_board.update_board(current_player.player_color, piece_type, index, orientation)
+            current_board.update_board(current_player.player_color, piece_type, index, orientation, round_count)
             current_player.update_player(piece_type)  # Updates ai
         else:
             players_with_no_moves += 1
@@ -116,10 +116,10 @@ def main():
     while True:
         current_board = board.Board()  # New board every loop
 
-        game_type = input("Would you like to run a human or ai game? [human/ai]: ").upper().strip()
-        if game_type == "HUMAN":
-            all_players = initialize_human_players(current_board)
-            human_game(current_board, all_players)
+        game_type = input("Would you like to run a human or ai game? [user/ai]: ").upper().strip()
+        if game_type == "USER":
+            all_players = initialize_user_players(current_board)
+            user_game(current_board, all_players)
         elif game_type == "AI":
             all_players = initialize_ai_players(current_board)
             ai_game(current_board, all_players)

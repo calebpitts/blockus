@@ -1,4 +1,4 @@
-# {key - piece name: val - associated points}
+# {key - piece name: val - associated piece points}
 GAME_PIECE_VALUES = {"monomino1": 1, "domino1": 2,
                      "trominoe1": 3, "trominoe2": 3,
                      "tetrominoes1": 4, "tetrominoes2": 4,
@@ -11,10 +11,6 @@ GAME_PIECE_VALUES = {"monomino1": 1, "domino1": 2,
                      "pentominoe9": 5, "pentominoe10": 5,
                      "pentominoe11": 5, "pentominoe12": 5}
 
-# ADD LATER
-# Bonus +15 points if all pieces played
-# Bonus +20 points if last piece played is monomino
-
 
 class Player:
     def __init__(self, board_state, color):
@@ -24,8 +20,10 @@ class Player:
         self.current_pieces = list(GAME_PIECE_VALUES.keys())  # Gives all piece names to player when game starts
 
     def check_moves(self, round_count):
+        ''' Checks whether player has at least one valid move before prompting player for a move.
+        '''
         self.all_valid_moves = self.board_state.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
-        if len(list(self.all_valid_moves.keys())) == 0:  # If no valid moves available for this player..
+        if len(list(self.all_valid_moves.keys())) == 0:  # If no valid moves available for this player, return FALSE
             return False
         return True
 
@@ -49,7 +47,7 @@ class Player:
     def prompt_type(self):
         ''' Asks user for desired piece type. Loops until valid piece type specified.
         '''
-        valid_piece_types = self.board_state.fetch_valid_piece_types(self.all_valid_moves)
+        valid_piece_types = list(self.all_valid_moves.keys())
 
         while True:
             piece_type = input("\nWhat piece type would you like to place? (enter name of piece or 'SHOW' to show your available pieces): ").upper().strip()
@@ -65,7 +63,7 @@ class Player:
     def prompt_index(self, piece_type):
         ''' Asks user for desired index of their piece type. Loops until valid index specified.
         '''
-        valid_indexes = self.board_state.fetch_valid_indexes(self.all_valid_moves, piece_type)
+        valid_indexes = list(self.all_valid_moves[piece_type].keys())
 
         while True:
             print("\nCurrent available indexes to choose from with your selected piece: ")
@@ -86,7 +84,7 @@ class Player:
     def prompt_orientation(self, piece_type, index):
         ''' Asks user for desired orientation of their piece type and index. Loops until valid orientation specified.
         '''
-        valid_orientations = self.board_state.fetch_valid_orientations(self.all_valid_moves, piece_type, index)
+        valid_orientations = self.all_valid_moves[piece_type][index]
 
         while True:
             see_orientations = input("Would you like to see the list of valid orientations you can make? Y/[N]: ").upper()
@@ -100,15 +98,16 @@ class Player:
                 print("You specified an erronous or invalid orientation. Try again.")
 
     def update_player(self, piece_type):
-        ''' Removes piece from the player's inventory and updates score
+        ''' Removes piece from the player's inventory and updates score and additional points if all pieces are played.
         '''
-        self.current_pieces.remove(piece_type)
-        self.update_score(piece_type)
+        self.current_pieces.remove(piece_type)  # Remove played piece from player's inventory
 
-    def update_score(self, piece_type):
-        ''' Updates overall player score by amount the piece type is worth
-        '''
-        self.player_score += GAME_PIECE_VALUES[piece_type]
+        if len(self.current_pieces) == 0 and piece_type == "monomino1":  # Additional 20 points if last piece played is a monomino
+            self.player_score += 20
+        elif len(self.current_pieces) == 0 and piece_type != "monomino1":  # Additional 15 points if all pieces have been played
+            self.player_score += 15
+
+        self.player_score += GAME_PIECE_VALUES[piece_type]  # Continue assignment of corresponding points for played piece regardless of the additional points cases
 
     def get_score(self):
         ''' Returns the current player's score

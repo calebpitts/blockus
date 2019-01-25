@@ -1,4 +1,4 @@
-# {key - piece name: val - associated points}
+# {key - piece name: val - associated piece points}
 GAME_PIECE_VALUES = {"monomino1": 1, "domino1": 2,
                      "trominoe1": 3, "trominoe2": 3,
                      "tetrominoes1": 4, "tetrominoes2": 4,
@@ -28,10 +28,11 @@ class AI:
     def update_player(self, piece_type):
         ''' Removes piece from the player's inventory and updates score
         '''
-        self.current_pieces.remove(piece_type)
-        self.update_score(piece_type)
+        self.current_pieces.remove(piece_type)  # Remove played piece from player's inventory
 
-    def update_score(self, piece_type):
-        ''' Updates overall player score by amount the piece type is worth
-        '''
-        self.player_score += GAME_PIECE_VALUES[piece_type]
+        if len(self.current_pieces) == 0 and piece_type == "monomino1":  # Additional 20 points if last piece played is a monomino
+            self.player_score += 20
+        elif len(self.current_pieces) == 0 and piece_type != "monomino1":  # Additional 15 points if all pieces have been played
+            self.player_score += 15
+
+        self.player_score += GAME_PIECE_VALUES[piece_type]  # Continue assignment of corresponding points for played piece regardless of the additional points cases
