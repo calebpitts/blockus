@@ -1,5 +1,6 @@
 from collections import defaultdict
 import math
+from copy import deepcopy
 
 # {key - piece name: val - offsets from index (assuming piece oriented east)}
 # Stores all offsets required to make the game board piece
@@ -30,29 +31,32 @@ ORIENTATIONS = ["north", "northwest", "south", "southeast", "west", "southwest",
 
 
 class Board:
-    def __init__(self):
-        self.reset_board()
+    def __init__(self, copy_from_board=None):
+        self.reset_board(copy_from_board)
 
     #### BOARD UPDATE METHODS ####
-    def reset_board(self):
+    def reset_board(self, copy_from_board=None):
         ''' Creates empty 2-dimensional 20 by 20 array that represents a clean board
         '''
-        self.board_contents = []
-        self.test_contents = []
+        if copy_from_board is not None:
+            self.board_contents = deepcopy(copy_from_board.board_contents)
+            self.test_contents = deepcopy(copy_from_board.test_contents)
+        else:
+            self.board_contents = []
+            self.test_contents = []
 
-        # Main board
-        for _ in range(20):
-            row = []
             for _ in range(20):
-                row.append(". ")
-            self.board_contents.append(row)
+                row = []
+                for _ in range(20):
+                    row.append(". ")
+                self.board_contents.append(row)
 
-        # Test board for AI process visualization
-        for _ in range(20):
-            row = []
+            # Test board for AI process visualization
             for _ in range(20):
-                row.append(".  ")
-            self.test_contents.append(row)
+                row = []
+                for _ in range(20):
+                    row.append(".  ")
+                self.test_contents.append(row)
 
     def update_board(self, player_color, piece_type, index, piece_orientation, round_count, ai_game):
         ''' Takes index point and places piece_type on board

@@ -22,6 +22,14 @@ class AI:
     def collect_moves(self, round_count):
         return self.board_state.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
 
+    def check_moves(self, round_count):
+        ''' Checks whether player has at least one valid move before prompting player for a move.
+        '''
+        self.all_valid_moves = self.board_state.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
+        if len(list(self.all_valid_moves.keys())) == 0:  # If no valid moves available for this player, return FALSE
+            return False
+        return True
+
     def request_move(self):
         pass
 
