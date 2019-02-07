@@ -60,7 +60,7 @@ class Board:
             index[1] = y coord
         '''
         self.player_color = player_color
-        for offset in self.shift_offsets(PIECE_TYPES[piece_type], int(piece_orientation[-1])):  # Shifts offset orientation accorind to last character in piece orientation
+        for offset in self.shift_offsets(PIECE_TYPES[piece_type], int(piece_orientation[-1])):  # NEW: Shifts offset orientation accorind to last character in piece orientation
             if offset == (0, 0):
                 self.place_piece(index[0] + offset[0], index[1] + offset[1], round_count, ai_game)  # Orientation doesn't matter since (0, 0) is the reference point
             else:
@@ -215,34 +215,17 @@ class Board:
             return True
         return False  # Invalid adjacent or space filled already..
 
-    # def is_valid_move(self, player_color, piece_type, index, orientation):
-    #     ''' Takes index point and checks all its offsets to determine if the piece at its given orientation can be placed.
-    #         Does NOT alter the state of the board. Only checks whether piece placement is possible.
-    #         Returns FALSE if ANY offsetted cell is invalid.
-    #     '''
-    #     for offset in PIECE_TYPES[piece_type]:
-    #         if offset == (0, 0):  # No need to rotate coord since its the index and there is no offset
-    #             if not self.is_valid_cell(index[0], index[1], player_color):
-    #                 return False
-    #         else:
-    #             new_x, new_y = self.rotate_piece(index, offset, orientation)
-    #             if not self.is_valid_cell(new_x, new_y, player_color):
-    #                 return False
-
-    #     return True
-
     def rotate_default_piece(self, piece_type, orientation):
         ''' Rotates the initial default orientation for shifting.
         '''
         orientation_offsets_to_shift = []
-        #print("YOLO1:", orientation, PIECE_TYPES[piece_type])
         for offset in PIECE_TYPES[piece_type]:
             if offset == (0, 0):
                 orientation_offsets_to_shift.append(offset)
             else:
                 new_x, new_y = self.rotate_piece((0, 0), offset, orientation + "z")  # adding dummy character to end since rotate ignores last character of orientation
                 orientation_offsets_to_shift.append((new_x, new_y))
-        #print("YOLO2:", orientation, orientation_offsets_to_shift)
+
         return orientation_offsets_to_shift
 
     def shift_offsets(self, offsets, offset_id):
@@ -260,7 +243,6 @@ class Board:
         for offset in offsets:
             shifted_offsets.append((offset[0] - new_origin_y_diff, offset[1] - new_origin_x_diff))
 
-        #print("SHIFTED", self.show_shift_id, ": ", shifted_offsets, sep="")
         return shifted_offsets
 
     def get_all_shifted_offsets(self, piece_type, orientation):
@@ -268,10 +250,8 @@ class Board:
             Makes each original offset coord the index to account for valid shift cases. 
         '''
         orientation_offsets_to_shift = self.rotate_default_piece(piece_type, orientation)
-        #print("ORIENATION TO SHIFT:", orientation_offsets_to_shift)
         shifted_offsets = []
         for offset_id in range(len(orientation_offsets_to_shift)):
-            #print("\nUNSHIFTED:", piece_type, " - ", PIECE_TYPES[piece_type])
             shifted_offsets.append(self.shift_offsets(orientation_offsets_to_shift, offset_id))
 
         return shifted_offsets
@@ -285,7 +265,6 @@ class Board:
         shifted_ids = []
         for shifted_id, shifted_offset in enumerate(self.get_all_shifted_offsets(piece_type, orientation)):  # Shift piece N times where N is the number of cells in the piece
             valid_placement = True
-            #print(piece_type, orientation, shifted_offset)
             for offset in shifted_offset:
                 if offset == (0, 0):  # No need to rotate coord since its the index and there is no offset
                     if not self.is_valid_cell(index[0], index[1], player_color):
@@ -296,11 +275,8 @@ class Board:
                         valid_placement = False
 
             if valid_placement:
-                #print(piece_type, "of", index, orientation, "with", shifted_id, "*valid*")
                 shifted_ids.append(shifted_id)
-            else:
-                #print(piece_type, "of", index, orientation, "with", shifted_id, "invalid")
-                pass
+
         return shifted_ids
 
     def get_all_valid_moves(self, round_count, player_color, player_pieces):
@@ -321,11 +297,8 @@ class Board:
             for index in empty_corner_indexes:  # Loop through all indexes where a piece can be placed
                 self.show_shift_id = 0
                 for orientation in ORIENTATIONS:  # Loop through all possible orientations at an unshifted index
-                    for shifted_id in self.check_orientation_shifts(player_color, piece_type, index, orientation):  # NEW # Loop through all shifted offsets of a particular orientation, if none valid, nothing gets added
-                        #print(piece_type, index, orientation, shifted_id)
-                        all_index_orientations[index].append(orientation + str(shifted_id))  # shifted_id is the cell(s) in piece where a shift is possible
-                    # if self.is_valid_move(player_color, piece_type, index, orientation):  # Checks if piece placement for every piece's valid index and all possible orientations is a valid move
-                    #    all_index_orientations[index].append(orientation)
+                    for shifted_id in self.check_orientation_shifts(player_color, piece_type, index, orientation):  # NEW: Loop through all shifted offsets of a particular orientation, if none valid, nothing gets added
+                        all_index_orientations[index].append(orientation + str(shifted_id))  # NEW: shifted_id is the cell(s) in piece where a shift is possible
             if len(list(all_index_orientations.keys())) > 0:  # If there are valid indexes for the piece type..
                 all_valid_moves[piece_type] = all_index_orientations
 
