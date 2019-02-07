@@ -237,7 +237,7 @@ class Board:
         '''
         shifted_offsets = []
 
-        self.show_shift_id += 1
+        #self.show_shift_id += 1
         if offset_id == 0:  # No need to shift the offsets for the default piece shape defined in the global space
             return offsets
 

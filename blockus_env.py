@@ -1,9 +1,10 @@
 from spacetimerl.turn_based_environment import TurnBasedEnvironment
-from board import Board
+from board import Board, PIECE_TYPES
 from ai import AI
 from typing import Tuple, List, Union
 import numpy as np
 from copy import deepcopy
+import dill
 
 PLAYER_TO_COLOR = {
     0: 'R ',
@@ -16,8 +17,18 @@ COLOR_TO_PLAYER = {
     'R ': 0,
     'B ': 1,
     'G ': 2,
-    'Y ': 3
+    'Y ': 3,
+    '. ': -1
 }
+
+PIECE_NAME_TO_INDEX = {piece_name: i for i, piece_name in enumerate(PIECE_TYPES.keys())}
+
+
+def relative_player_id(current_player: int, absolute_player_num) -> int:
+    if absolute_player_num < 0:
+        return absolute_player_num
+
+    return (absolute_player_num - current_player) % 4
 
 
 def action_to_string(piece_type, index, orientation):
@@ -46,7 +57,12 @@ class BlockusEnv(TurnBasedEnvironment):
     @property
     def observation_shape(self) -> tuple:
         """ Property holding the numpy shape of a transformed observation state. """
-        raise (20, 20)
+
+        return {"board": (20, 20), "pieces": (4, 21), "score": (4,)}
+
+    @staticmethod
+    def observation_names():
+        return ["board", "pieces", "score"]
 
     def new_state(self, num_players: int = 4) -> Tuple[Board, int, List[AI]]:
         """ Create a fresh state. This could return a fixed object or randomly initialized on, depending on the game.
@@ -65,6 +81,19 @@ class BlockusEnv(TurnBasedEnvironment):
         yellow = AI(board, "Y ")
 
         return board, 0, [red, blue, green, yellow]
+
+    # Serialization Methods
+    @staticmethod
+    def serializable() -> bool:
+        return True
+
+    @staticmethod
+    def serialize_state(state: object) -> str:
+        return dill.dumps(state)
+
+    @staticmethod
+    def unserialize_state(serialized_state: str) -> object:
+        return dill.loads(serialized_state)
 
     def next_state(self, state: Tuple[Board, int, List[AI]], player: int, action: str) \
             -> Tuple[Tuple[Board, int, List[AI]], float, bool, Union[List[int], None]]:
@@ -111,7 +140,7 @@ class BlockusEnv(TurnBasedEnvironment):
 
     def valid_actions(self, state: object, player: int) -> [str]:
         """ Valid actions for a specific state. """
-        return NotImplementedError
+        raise NotImplementedError
 
     def is_valid_action(self, state: object, player: int, action: str) -> bool:
         """ Valid actions for a specific state. """
@@ -137,7 +166,23 @@ class BlockusEnv(TurnBasedEnvironment):
     def state_to_observation(self, state: Tuple[Board, int, List[AI]], player: int) -> np.ndarray:
         """ Convert the raw game state to the observation for the agent.
         The observation must be able to be fed into your predictor.
-
         This can return different values for the different players. Default implementation is just the identity."""
+
+        pieces = np.zeros((4, 21), dtype=np.uint8)
         board, round_count, players = state
-        return np.asarray(board.board_contents)
+        board = [[relative_player_id(player, COLOR_TO_PLAYER[pos]) for pos in row] for row in board.board_contents]
+        board = np.asarray(board)
+
+        for p in players:
+            p.current_pieces
+
+            color = p.player_color
+            rel_player_id = relative_player_id(current_player=player,
+                                               absolute_player_num=COLOR_TO_PLAYER[color])
+
+            for piece in p.current_pieces:
+                pieces[rel_player_id, PIECE_NAME_TO_INDEX[piece]] = 1
+
+        score = np.roll(np.array([p.player_score for p in players]), -player)
+
+        return {'board': board, 'pieces': pieces, 'score': score}
