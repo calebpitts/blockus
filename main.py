@@ -5,6 +5,7 @@ import ai
 import itertools
 import random
 import sys
+import time
 
 
 def welcome():
@@ -67,6 +68,8 @@ def user_game(current_board, all_players):
     players_with_no_moves = 0
 
     for current_player in itertools.cycle(all_players):
+        # all_valid_moves = current_board.get_all_valid_moves(round_count, current_player.player_color, current_player.current_pieces)  # TEST
+        # print("VALID MOVES FOR: ", current_player.player_color, ":", all_valid_moves, sep="")  # TEST OUTPUT
         moves_present = current_player.check_moves(round_count)  # Checks if player can make any moves
 
         if moves_present:  # If current player can make at least one move..
@@ -94,6 +97,7 @@ def ai_game(current_board, all_players):
     player_count = 0
     num_players = len(all_players)
     players_with_no_moves = 0
+    round_time = 0
 
     for current_player in itertools.cycle(all_players):
         all_valid_moves = current_player.collect_moves(round_count)
@@ -113,8 +117,11 @@ def ai_game(current_board, all_players):
             current_board.update_board(current_player.player_color, piece_type, index, orientation, round_count, True)
             current_player.update_player(piece_type)  # Updates ai
 
-            if player_count == 0:  # TESTNG PURPOSES
+            if player_count == 0:  # Stop ai game and look mechanism
+                end = time.time()
+                print("Time For AI Round ", round_count, ": ", round_time, sep="")
                 x = input()  # Stops each round to observe ai game visually. Disable by commenting out this line
+                start = time.time()
         else:
             players_with_no_moves += 1
 
@@ -122,6 +129,8 @@ def ai_game(current_board, all_players):
 
         if player_count == num_players:  # Increment round count each time last player's turn is done.
             round_count += 1
+            end = time.time()
+            round_time = end - start
             player_count = 0
 
         if players_with_no_moves == 4:  # If 4 players with no moves, end game
