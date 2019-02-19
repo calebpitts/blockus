@@ -2,6 +2,7 @@
 import board
 import player
 import ai
+import gui
 import itertools
 import random
 import sys
@@ -74,7 +75,8 @@ def user_game(current_board, all_players):
 
         if moves_present:  # If current player can make at least one move..
             players_with_no_moves = 0  # Reset no_moves counter since at least one player could make move
-            current_board.display_board(current_player, all_players, round_count, False)
+            #current_board.display_board(current_player, all_players, round_count, False)
+            gui.display_board(current_board.board_contents, current_player, all_players, round_count)
             color, piece_type, index, orientation = current_player.prompt_turn()
             current_board.update_board(color, piece_type, index, orientation, round_count, False)
         else:
@@ -86,7 +88,9 @@ def user_game(current_board, all_players):
         if players_with_no_moves == 4:  # If 4 players with no moves, end game
             break
 
-    display_endgame_results(all_players, round_count)
+    #display_endgame_results(all_players, round_count)
+    winner = current_board.calculate_winner(all_players, round_count)
+    gui.display_board(current_board.board_contents, current_player, all_players, round_count, winner)
 
 
 def ai_game(current_board, all_players):
@@ -103,9 +107,11 @@ def ai_game(current_board, all_players):
         all_valid_moves = current_player.collect_moves(round_count)
         print("VALID MOVES FOR: ", current_player.player_color, ":", all_valid_moves, sep="")  # TEST OUTPUT
 
+        gui.display_board(current_board.board_contents, current_player, all_players, round_count)  # I don't know why i need to put this here
         if len(list(all_valid_moves.keys())) > 0:  # If no valid moves available for this player.
             players_with_no_moves = 0  # Reset to zero if at least one player can make a move
             current_board.display_board(current_player, all_players, round_count, True)
+            gui.display_board(current_board.board_contents, current_player, all_players, round_count)
 
             # Get all valid moves and ai decides on which one to make
             random_indexes = random.sample(all_valid_moves.items(), 1)
@@ -120,7 +126,7 @@ def ai_game(current_board, all_players):
             if player_count == 0:  # Stop ai game and look mechanism
                 end = time.time()
                 print("Time For AI Round ", round_count, ": ", round_time, sep="")
-                x = input()  # Stops each round to observe ai game visually. Disable by commenting out this line
+                # x = input()  # Stops each round to observe ai game visually. Disable by commenting out this line
                 start = time.time()
         else:
             players_with_no_moves += 1
@@ -136,7 +142,9 @@ def ai_game(current_board, all_players):
         if players_with_no_moves == 4:  # If 4 players with no moves, end game
             break
 
-    display_endgame_results(current_board, all_players, round_count)
+    #display_endgame_results(current_board, all_players, round_count)
+    winner = current_board.calculate_winner(all_players, round_count)
+    gui.display_board(current_board.board_contents, current_player, all_players, round_count, winner)
 
 
 def main():
@@ -145,6 +153,7 @@ def main():
 
     while True:
         current_board = board.Board()  # New board every loop
+        gui.start_gui()
 
         if game_type == "user":
             all_players = initialize_user_players(current_board)
@@ -162,6 +171,7 @@ def main():
             game_type = input("Would you like to run a human or ai game? [user/ai]: ").lower().strip()
 
     print("\nGoodbye!")
+    gui.terminate_gui()
 
 
 if __name__ == "__main__":
