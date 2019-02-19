@@ -14,18 +14,18 @@ GAME_PIECE_VALUES = {"monomino1": 1, "domino1": 2,
 
 class AI:
     def __init__(self, board_state, color):
-        self.board_state = board_state
+        # self.board_state = board_state
         self.player_color = color
         self.player_score = 0
         self.current_pieces = list(GAME_PIECE_VALUES.keys())  # Gives all piece names to player when game starts
 
-    def collect_moves(self, round_count):
-        return self.board_state.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
+    def collect_moves(self, board, round_count):
+        return board.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
 
-    def check_moves(self, round_count):
+    def check_moves(self, board, round_count):
         ''' Checks whether player has at least one valid move before prompting player for a move.
         '''
-        self.all_valid_moves = self.board_state.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
+        self.all_valid_moves = board.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
         if len(list(self.all_valid_moves.keys())) == 0:  # If no valid moves available for this player, return FALSE
             return False
         return True

@@ -1,4 +1,4 @@
-from spacetimerl.turn_based_environment import TurnBasedEnvironment
+from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
 from board import Board, PIECE_TYPES
 from ai import AI
 from typing import Tuple, List, Union
@@ -44,6 +44,21 @@ def string_to_action(action_str: str):
     return piece_type, index, orientation
 
 
+def start_gui():
+    gui.start_gui()
+
+
+def terminate_gui():
+    gui.terminate_gui()
+
+
+def display_board(state: Tuple[Board, int, List[AI]], player: int, winners: List[int]):
+    board, round_count, players = state
+    current_player = players[player]
+    gui.display_board(board_contents=board.board_contents, current_player=current_player, players=players, round_count=round_count, winners=winners)
+
+
+@turn_based_environment
 class BlockusEnv(TurnBasedEnvironment):
 
     @property
@@ -60,11 +75,11 @@ class BlockusEnv(TurnBasedEnvironment):
     def observation_shape(self) -> tuple:
         """ Property holding the numpy shape of a transformed observation state. """
 
-        return {"board": (20, 20), "pieces": (4, 21), "score": (4,)}
+        return {"board": (20, 20), "pieces": (4, 21), "score": (4,), "player": (1,)}
 
     @staticmethod
     def observation_names():
-        return ["board", "pieces", "score"]
+        return ["board", "pieces", "score", "player"]
 
     def new_state(self, num_players: int = 4) -> Tuple[Board, int, List[AI]]:
         """ Create a fresh state. This could return a fixed object or randomly initialized on, depending on the game.
@@ -105,15 +120,15 @@ class BlockusEnv(TurnBasedEnvironment):
         new_board = Board(board)
 
         color = PLAYER_TO_COLOR[player]
-        piece_type, index, orientation = string_to_action(action)
 
         current_player = players[player]
 
         if len(action) > 0:
+            piece_type, index, orientation = string_to_action(action)
             new_board.update_board(color, piece_type, index, orientation, round_count, True)
             current_player.update_player(piece_type)
 
-        if not any(p.check_moves(round_count) for p in players):
+        if not any(p.check_moves(board, round_count) for p in players):
             terminal = True
             max_score = 0
             scores = []
@@ -153,7 +168,7 @@ class BlockusEnv(TurnBasedEnvironment):
         board, round_count, players = state
         piece_type, index, orientation = string_to_action(action)
         current_player = players[player]
-        all_valid_moves = current_player.collect_moves(round_count)
+        all_valid_moves = current_player.collect_moves(board, round_count)
 
         is_valid_move = False
         try:
@@ -187,15 +202,4 @@ class BlockusEnv(TurnBasedEnvironment):
 
         score = np.roll(np.array([p.player_score for p in players]), -player)
 
-        return {'board': board, 'pieces': pieces, 'score': score}
-
-    def start_gui(self):
-        gui.start_gui()
-
-    def terminate_gui(self):
-        gui.terminate_gui()
-
-    def display_board(self, state: Tuple[Board, int, List[AI]], player: int, winners: List[int]):
-        board, round_count, players = state
-
-        gui.display_board(board_content=board.board_contents, current_player=player, players=players, round_count=round_count, winners=winners)
+        return {'board': board, 'pieces': pieces, 'score': score, 'player': np.array([player])}

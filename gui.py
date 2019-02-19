@@ -1,6 +1,6 @@
 import sys
 import pygame as pg
-from pygame.locals import *
+clock = pg.time.Clock()
 
 
 COLORS = {'R': (220, 20, 60),
@@ -81,11 +81,13 @@ def display_board(board_contents, current_player, players, round_count, winners=
     #     pg.display.update()
 
     pg.display.flip()
-    pg.display.update()
+    clock.tick(60)
+
+    # pg.display.update()
 
 
 def start_gui():
-    pg.init()
+    pg.display.init()
     pg.display.set_caption('Blockus Game - Beta')
     pg.font.init()
 
@@ -93,8 +95,8 @@ def start_gui():
 def terminate_gui():
     pg.display.quit()
     pg.quit()
-    sys.exit()
-
+    print("quit pygame")
+    sys.exit(0)
 
 # PIECES FOR LATER?
 # elif pg.mouse.get_pressed()[0]:

@@ -81,6 +81,25 @@ class Board:
             else:
                 self.test_contents[y][x] = self.player_color.strip() + str(round_count)   # TESTING ONLY
 
+    def calculate_winner(self, players, round_count):
+        ''' Returns the winner's player color.
+        '''
+        max_score = 0
+        scores = []
+        winner = "NONE"
+
+        for current_player in players:
+            scores.append((current_player.player_color, current_player.player_score))
+            if current_player.player_score > max_score:
+                max_score = current_player.player_score
+
+        for player_color, score in sorted(scores, key=lambda x: x[1]):
+            print(player_color, score)
+            if score == max_score:  # Prints all scores equal to the max score (accounts for ties)
+                winner = player_color.strip()
+
+        return winner
+
     #### PIECE ORIENTATION METHODS ####
     def rotate_piece(self, index, offset, piece_orientation):
         ''' Orients piece about the index point according to the user/ai-desired orientation
