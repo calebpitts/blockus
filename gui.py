@@ -54,7 +54,7 @@ def prep_cells(board_contents):
     return rectangles
 
 
-def display_board(board_contents, current_player, players, round_count, winner=None):
+def display_board(board_contents, current_player, players, round_count, winners=None):
     ''' Displays board contents and other game-related stats to a gui using pygame.
     '''
     screen = pg.display.set_mode((819, 960))
@@ -72,13 +72,13 @@ def display_board(board_contents, current_player, players, round_count, winner=N
 
     winner_indicator = None
 
-    if winner is not None:  # NOT WORKING
-        print("FOUND WINNER", winner)
-        scores_text = "WINNER: " + winner
-        winner_font = pg.font.SysFont('Helvetica', 20)
-        winner_indicator = winner_font.render(scores_text, True, (255, 255, 255))
-        screen.blit(winner_indicator, (10, 920))  # Pop-up block appears when winner determined
-        pg.display.update()
+    # if winner is not None:  # NOT WORKING
+    #     print("FOUND WINNER", winner)
+    #     scores_text = "WINNER: " + winner
+    #     winner_font = pg.font.SysFont('Helvetica', 20)
+    #     winner_indicator = winner_font.render(scores_text, True, (255, 255, 255))
+    #     screen.blit(winner_indicator, (10, 920))  # Pop-up block appears when winner determined
+    #     pg.display.update()
 
     pg.display.flip()
     pg.display.update()

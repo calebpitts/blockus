@@ -5,6 +5,8 @@ from typing import Tuple, List, Union
 import numpy as np
 from copy import deepcopy
 import dill
+import gui
+
 
 PLAYER_TO_COLOR = {
     0: 'R ',
@@ -186,3 +188,14 @@ class BlockusEnv(TurnBasedEnvironment):
         score = np.roll(np.array([p.player_score for p in players]), -player)
 
         return {'board': board, 'pieces': pieces, 'score': score}
+
+    def start_gui(self):
+        gui.start_gui()
+
+    def terminate_gui(self):
+        gui.terminate_gui()
+
+    def display_board(self, state: Tuple[Board, int, List[AI]], player: int, winners: List[int]):
+        board, round_count, players = state
+
+        gui.display_board(board_content=board.board_contents, current_player=player, players=players, round_count=round_count, winners=winners)
