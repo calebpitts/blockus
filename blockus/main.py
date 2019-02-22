@@ -1,8 +1,5 @@
 
-import board
-import player
-import ai
-import gui
+from . import board, player, ai, gui
 import itertools
 import random
 import sys

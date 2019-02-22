@@ -1,12 +1,13 @@
 from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
-from board import Board, PIECE_TYPES
-from ai import AI
+from spacetimerl.client_environment import ClientEnv
+from .board import Board, PIECE_TYPES
+from .ai import AI
+from . import gui
 from typing import Tuple, List, Union
 import numpy as np
 from copy import deepcopy
 import dill
-import gui
-
+import random
 
 PLAYER_TO_COLOR = {
     0: 'R ',
@@ -52,10 +53,52 @@ def terminate_gui():
     gui.terminate_gui()
 
 
-def display_board(state: Tuple[Board, int, List[AI]], player: int, winners: List[int]):
-    board, round_count, players = state
-    current_player = players[player]
-    gui.display_board(board_contents=board.board_contents, current_player=current_player, players=players, round_count=round_count, winners=winners)
+class BlockusClientEnv(ClientEnv):
+
+    def __init__(self, *args, **kwargs):
+        self._gui_is_active = False
+        super().__init__(*args, **kwargs)
+
+    def __del__(self):
+        if self._gui_is_active:
+            terminate_gui()
+
+    @staticmethod
+    def _display_board(state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
+        _, inner_state = state
+        board, round_count, players = inner_state
+        current_player = players[player_num]
+        gui.display_board(board_contents=board.board_contents, current_player=current_player, players=players,
+                          round_count=round_count, winners=winners)
+
+    def render(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
+        if not self._gui_is_active:
+            start_gui()
+            self._display_board(state, player_num, winners)
+        self._display_board(state, player_num, winners)
+
+    @staticmethod
+    def random_valid_action_string(state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int) -> str:
+        _, inner_state = state
+        board, round_count, players = inner_state
+        player = players[player_num]
+
+        all_valid_moves = player.collect_moves(board, round_count)
+        print("All possible moves for you: {}".format(all_valid_moves))
+        # input('press enter to play random move:')
+
+        if len(all_valid_moves.keys()) != 0:
+            random_indexes = random.sample(all_valid_moves.items(), 1)
+            piece_type = random_indexes[0][0]
+            index = list(all_valid_moves[piece_type].keys())[0]
+            orientation = all_valid_moves[piece_type][index][0]
+
+            string_action = action_to_string(piece_type, index, orientation)
+        else:
+            string_action = ""
+
+        return string_action
+
 
 
 @turn_based_environment
@@ -105,23 +148,26 @@ class BlockusEnv(TurnBasedEnvironment):
         return True
 
     @staticmethod
-    def serialize_state(state: object) -> str:
+    def serialize_state(state: object) -> bytes:
         return dill.dumps(state)
 
     @staticmethod
-    def unserialize_state(serialized_state: str) -> object:
+    def deserialize_state(serialized_state: bytes) -> object:
+        # print("serialize state:\n{}".format(serialized_state))
+        # exit()
         return dill.loads(serialized_state)
 
-    def next_state(self, state: Tuple[Board, int, List[AI]], player: int, action: str) \
+    def next_state(self, state: Tuple[Board, int, List[AI]], player_num: int, action: str) \
             -> Tuple[Tuple[Board, int, List[AI]], float, bool, Union[List[int], None]]:
 
         board, round_count, players = state
+
         players = deepcopy(players)
         new_board = Board(board)
 
-        color = PLAYER_TO_COLOR[player]
+        color = PLAYER_TO_COLOR[player_num]
 
-        current_player = players[player]
+        current_player = players[player_num]
 
         if len(action) > 0:
             piece_type, index, orientation = string_to_action(action)
@@ -150,16 +196,16 @@ class BlockusEnv(TurnBasedEnvironment):
             reward = 0
             terminal = False
 
-        if player == 3:
+        if player_num == 3:
             round_count += 1
 
         return (new_board, round_count, players), reward, terminal, winners
 
-    def valid_actions(self, state: object, player: int) -> [str]:
+    def valid_actions(self, state: Tuple[Board, int, List[AI]], player: int) -> [str]:
         """ Valid actions for a specific state. """
         raise NotImplementedError
 
-    def is_valid_action(self, state: object, player: int, action: str) -> bool:
+    def is_valid_action(self, state: Tuple[Board, int, List[AI]], player_num: int, action: str) -> bool:
         """ Valid actions for a specific state. """
 
         if len(action) == 0:
@@ -167,7 +213,7 @@ class BlockusEnv(TurnBasedEnvironment):
 
         board, round_count, players = state
         piece_type, index, orientation = string_to_action(action)
-        current_player = players[player]
+        current_player = players[player_num]
         all_valid_moves = current_player.collect_moves(board, round_count)
 
         is_valid_move = False
