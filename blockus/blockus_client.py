@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 
-@RLApp("localhost", 7777, client_environment=BlockusClientEnv, server_environment=BlockusEnv)
+@RLApp("localhost", 7777, client_environment=BlockusClientEnv, server_environment=BlockusEnv, time_out=5)
 def main(ce: BlockusClientEnv):
     logger = init_logging()
 
@@ -16,7 +16,7 @@ def main(ce: BlockusClientEnv):
     winners = None
 
     while True:
-        ce.render(ce.full_state, player_num, winners)
+        # ce.render(ce.full_state, player_num, winners)
 
         action = BlockusClientEnv.random_valid_action_string(state=ce.full_state, player_num=player_num)
 
