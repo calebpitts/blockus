@@ -5,7 +5,7 @@ import random
 
 import time
 import numpy as np
-
+import pdb
 
 @RLApp("localhost", 7777, client_environment=BlockusClientEnv, server_environment=BlockusEnv, time_out=5)
 def main(ce: BlockusClientEnv):
@@ -16,7 +16,10 @@ def main(ce: BlockusClientEnv):
     winners = None
 
     while True:
-        # ce.render(ce.full_state, player_num, winners)
+
+        pdb.set_trace()
+
+        ce.render(ce.full_state, player_num, winners)
 
         action = BlockusClientEnv.random_valid_action_string(state=ce.full_state, player_num=player_num)
 

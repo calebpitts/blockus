@@ -12,6 +12,13 @@ from numba import jit
 import numpy as np
 import math
 
+def dummy_jit(*args, **kwargs):
+    def dumdum(f):
+        return f
+    return dumdum
+
+jit = dummy_jit
+
 
 #### METHODS FOR check_shifted() ####
 @jit("UniTuple(int64, 2)(UniTuple(int64, 2), UniTuple(int64, 2), double)", nopython=True)  # "int(int64, ...)"

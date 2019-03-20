@@ -3,25 +3,25 @@ from spacetimerl.client_environment import ClientEnv
 from .board import Board, PIECE_TYPES
 from .ai import AI
 from . import gui
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Dict
 import numpy as np
 from copy import deepcopy
 import dill
 import random
 
 PLAYER_TO_COLOR = {
-    0: 'R ',
-    1: 'B ',
-    2: 'G ',
-    3: 'Y '
+    0: 1,
+    1: 2,
+    2: 3,
+    3: 4
 }
 
 COLOR_TO_PLAYER = {
-    'R ': 0,
-    'B ': 1,
-    'G ': 2,
-    'Y ': 3,
-    '. ': -1
+    1: 0,
+    2: 1,
+    3: 2,
+    4: 3,
+    0: -1
 }
 
 PIECE_NAME_TO_INDEX = {piece_name: i for i, piece_name in enumerate(PIECE_TYPES.keys())}
@@ -135,10 +135,10 @@ class BlockusEnv(TurnBasedEnvironment):
             List of players whos turn it is now.
         """
         board = Board()
-        red = AI(board, "R ")
-        blue = AI(board, "B ")
-        green = AI(board, "G ")
-        yellow = AI(board, "Y ")
+        red = AI(board, 1)
+        blue = AI(board, 2)
+        green = AI(board, 3)
+        yellow = AI(board, 4)
 
         return board, 0, [red, blue, green, yellow]
 
@@ -226,7 +226,7 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return is_valid_move
 
-    def state_to_observation(self, state: Tuple[Board, int, List[AI]], player: int) -> np.ndarray:
+    def state_to_observation(self, state: Tuple[Board, int, List[AI]], player: int) -> Dict[str, np.ndarray]:
         """ Convert the raw game state to the observation for the agent.
         The observation must be able to be fed into your predictor.
         This can return different values for the different players. Default implementation is just the identity."""
@@ -237,7 +237,6 @@ class BlockusEnv(TurnBasedEnvironment):
         board = np.asarray(board)
 
         for p in players:
-            p.current_pieces
 
             color = p.player_color
             rel_player_id = relative_player_id(current_player=player,
