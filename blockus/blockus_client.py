@@ -1,11 +1,7 @@
-from .blockus_env import BlockusEnv, BlockusClientEnv, start_gui, terminate_gui, action_to_string
+from blockus.blockus_env import BlockusEnv, BlockusClientEnv, start_gui, terminate_gui, action_to_string
 from spacetimerl.rl_logging import init_logging
 from spacetimerl.client_environment import RLApp, ClientEnv
-import random
-
-import time
 import numpy as np
-import pdb
 
 @RLApp("localhost", 7777, client_environment=BlockusClientEnv, server_environment=BlockusEnv, time_out=5)
 def main(ce: BlockusClientEnv):
@@ -16,10 +12,7 @@ def main(ce: BlockusClientEnv):
     winners = None
 
     while True:
-
-        pdb.set_trace()
-
-        ce.render(ce.full_state, player_num, winners)
+        # ce.render(ce.full_state, player_num, winners)
 
         action = BlockusClientEnv.random_valid_action_string(state=ce.full_state, player_num=player_num)
 

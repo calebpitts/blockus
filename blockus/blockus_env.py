@@ -1,8 +1,8 @@
 from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
 from spacetimerl.client_environment import ClientEnv
-from .board import Board, PIECE_TYPES
-from .ai import AI
-from . import gui
+from blockus.board import Board, PIECE_TYPES
+from blockus.ai import AI
+from blockus import gui
 from typing import Tuple, List, Union, Dict
 import numpy as np
 from copy import deepcopy
