@@ -4,7 +4,7 @@
 ## Modules
 ```main.py```: Driver of game without blockus environment/server support. Runs simple game with random moves chosen. Call ```python main.py show``` to render pygame board or ```python main.py``` to see terminal output (which is faster).
 
-```board.py```: Handles state of hte board, piece placements, and valid move driver methods.
+```board.py```: Handles state of the board, piece placements, and valid move driver methods.
 
 ```computation.py```: Contains computation methods that ```board.py``` uses to manage valid move seeks and piece placement. Methods use Numba with jit decorator that precompiles
   types and makes runtime faster than normal python.
