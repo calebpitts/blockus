@@ -82,7 +82,7 @@ class BlockusClientEnv(ClientEnv):
         player = players[player_num]
 
         all_valid_moves = player.collect_moves(board, round_count)
-        print("All possible moves for you: {}".format(all_valid_moves))
+        # print("All possible moves for you: {}".format(all_valid_moves))
         # input('press enter to play random move:')
 
         if len(all_valid_moves.keys()) != 0:
@@ -210,7 +210,7 @@ class BlockusEnv(TurnBasedEnvironment):
         """ Valid actions for a specific state. """
         actions_dict = self.valid_actions_dict(state=state, player=player)
 
-        print(actions_dict)
+        # print(actions_dict)
 
         valid_moves = []
         for piece_type, index_orientation_dict in actions_dict.items():

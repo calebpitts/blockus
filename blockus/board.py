@@ -189,9 +189,9 @@ class Board:
             if current_player.player_score > max_score:
                 max_score = current_player.player_score
 
-        print("FINAL SCORES:")
+        # print("FINAL SCORES:")
         for player_color, score in sorted(scores, key=lambda x: x[1]):
-            print(self.decode_color(player_color), score)
+            # print(self.decode_color(player_color), score)
             if score == max_score:  # Prints all scores equal to the max score (accounts for ties)
                 winner = self.decode_color(player_color)
 

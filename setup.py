@@ -7,5 +7,5 @@ setup(
    author='Caleb Pitts',
    author_email='',
    packages=['blockus'],  #same as name
-   install_requires=['numpy', 'spacetime', 'spacetimerl', 'dill', 'pygame'],
+   install_requires=['numpy', 'spacetime', 'spacetimerl', 'dill', 'pygame', 'numba'],
 )
