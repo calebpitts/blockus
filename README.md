@@ -2,7 +2,7 @@
 [Blockus Game Rules](https://en.wikipedia.org/wiki/Blokus)
 
 ## Modules
-```main.py```: Driver of game without blockus environment/server support. Runs simple game with random moves chosen. Call ```python main.py show``` to render pygame board and ```python main.py``` to see terminal output (which is faster).
+```main.py```: Driver of game without blockus environment/server support. Runs simple game with random moves chosen. Call ```python main.py show``` to render pygame board or ```python main.py``` to see terminal output (which is faster).
 
 ```board.py```: Handles state of hte board, piece placements, and valid move driver methods.
 
