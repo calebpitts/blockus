@@ -16,7 +16,7 @@ COLOR ENCODINGS
 from collections import defaultdict
 from copy import deepcopy
 import numpy as np
-from . import computation as comp
+from blockus import computation as comp
 from numba import jit
 
 # Stores structure of all playable pieces
