@@ -100,7 +100,6 @@ class BlockusClientEnv(ClientEnv):
         return string_action
 
 
-
 @turn_based_environment
 class BlockusEnv(TurnBasedEnvironment):
 
@@ -203,7 +202,23 @@ class BlockusEnv(TurnBasedEnvironment):
 
     def valid_actions(self, state: Tuple[Board, int, List[AI]], player: int) -> [str]:
         """ Valid actions for a specific state. """
-        raise NotImplementedError
+        actions_dict = self.valid_actions_dict(state=state, player=player)
+
+        valid_moves = []
+        for piece_type, index_orientation_dict in actions_dict.items():
+            for index, orientation_list in index_orientation_dict.items():
+                for orientation in orientation_list:
+                    valid_moves.append(action_to_string(piece_type=piece_type, index=index, orientation=orientation))
+
+        return valid_moves
+
+    def valid_actions_dict(self, state: Tuple[Board, int, List[AI]], player: int) -> Dict[str, Dict[Tuple[int], List[str]]]:
+        """ Valid actions for a specific state in the dictionary form {piece_type: {index: [orientation]}}"""
+        board, round_count, players = state
+        current_player_object = players[player]
+        return board.get_all_valid_moves(round_count=round_count,
+                                         player_color=player,
+                                         player_pieces=current_player_object.current_pieces)
 
     def is_valid_action(self, state: Tuple[Board, int, List[AI]], player_num: int, action: str) -> bool:
         """ Valid actions for a specific state. """
