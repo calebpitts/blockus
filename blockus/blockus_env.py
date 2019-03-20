@@ -63,8 +63,7 @@ class BlockusClientEnv(ClientEnv):
         if self._gui_is_active:
             terminate_gui()
 
-    @staticmethod
-    def _display_board(state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
+    def _display_board(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
         _, inner_state = state
         board, round_count, players = inner_state
         current_player = players[player_num]
@@ -77,8 +76,7 @@ class BlockusClientEnv(ClientEnv):
             self._display_board(state, player_num, winners)
         self._display_board(state, player_num, winners)
 
-    @staticmethod
-    def random_valid_action_string(state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int) -> str:
+    def random_valid_action_string(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int) -> str:
         _, inner_state = state
         board, round_count, players = inner_state
         player = players[player_num]
@@ -98,6 +96,14 @@ class BlockusClientEnv(ClientEnv):
             string_action = ""
 
         return string_action
+
+    def valid_actions_list(self) -> [str]:
+        """ Valid actions for a specific state. """
+        return self._server_environment.valid_actions(state=self.full_state, player=self._player.number)
+
+    def valid_actions_dict(self) -> Dict[str, Dict[Tuple[int], List[str]]]:
+        """ Valid actions for a specific state in the dictionary form {piece_type: {index: [orientation]}}"""
+        return self._server_environment.valid_actions_dict(state=self.full_state, player=self._player.number)
 
 
 @turn_based_environment
@@ -204,11 +210,16 @@ class BlockusEnv(TurnBasedEnvironment):
         """ Valid actions for a specific state. """
         actions_dict = self.valid_actions_dict(state=state, player=player)
 
+        print(actions_dict)
+
         valid_moves = []
         for piece_type, index_orientation_dict in actions_dict.items():
             for index, orientation_list in index_orientation_dict.items():
                 for orientation in orientation_list:
                     valid_moves.append(action_to_string(piece_type=piece_type, index=index, orientation=orientation))
+
+        if len(valid_moves) == 0:
+            valid_moves.append("")
 
         return valid_moves
 
@@ -217,7 +228,7 @@ class BlockusEnv(TurnBasedEnvironment):
         board, round_count, players = state
         current_player_object = players[player]
         return board.get_all_valid_moves(round_count=round_count,
-                                         player_color=player,
+                                         player_color=PLAYER_TO_COLOR[player],
                                          player_pieces=current_player_object.current_pieces)
 
     def is_valid_action(self, state: Tuple[Board, int, List[AI]], player_num: int, action: str) -> bool:

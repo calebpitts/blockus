@@ -12,12 +12,12 @@ from numba import jit
 import numpy as np
 import math
 
-def dummy_jit(*args, **kwargs):
-    def dumdum(f):
-        return f
-    return dumdum
-
-jit = dummy_jit
+# def dummy_jit(*args, **kwargs):
+#     def dumdum(f):
+#         return f
+#     return dumdum
+#
+# jit = dummy_jit
 
 
 #### METHODS FOR check_shifted() ####

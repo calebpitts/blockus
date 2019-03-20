@@ -2,6 +2,7 @@ from blockus.blockus_env import BlockusEnv, BlockusClientEnv, start_gui, termina
 from spacetimerl.rl_logging import init_logging
 from spacetimerl.client_environment import RLApp, ClientEnv
 import numpy as np
+from random import choice
 
 @RLApp("localhost", 7777, client_environment=BlockusClientEnv, server_environment=BlockusEnv, time_out=5)
 def main(ce: BlockusClientEnv):
@@ -14,7 +15,8 @@ def main(ce: BlockusClientEnv):
     while True:
         # ce.render(ce.full_state, player_num, winners)
 
-        action = BlockusClientEnv.random_valid_action_string(state=ce.full_state, player_num=player_num)
+        valid_actions = ce.valid_actions_list()
+        action = choice(valid_actions)
 
         new_obs, reward, terminal, winners = ce.step(str(action))
 
