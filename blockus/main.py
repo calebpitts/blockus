@@ -1,5 +1,11 @@
+''' 
+Author: Caleb Pitts
+Date: 3/15/19
+'''
 
-from . import board, player, ai, gui
+import board
+import ai
+import gui
 import itertools
 import random
 import sys
@@ -9,106 +15,61 @@ import time
 def welcome():
     ''' Displays welcome message to console
     '''
-    print("                =======================")
-    print("                = Welcome to Blockus! =")
-    print("                =======================")
+    print("=======================")
+    print("= Welcome to Blockus! =")
+    print("=======================")
     print()
 
 
-def initialize_user_players(current_board):
-    red = player.Player(current_board, "R ")
-    blue = player.Player(current_board, "B ")
-    green = player.Player(current_board, "G ")
-    yellow = player.Player(current_board, "Y ")
-    all_players = [red, blue, green, yellow]
-
-    return all_players
-
-
-def initialize_ai_players(current_board):
-    red = ai.AI(current_board, "R ")
-    blue = ai.AI(current_board, "B ")
-    green = ai.AI(current_board, "G ")
-    yellow = ai.AI(current_board, "Y ")
-    all_players = [red, blue, green, yellow]
-
-    return all_players
-
-
-def display_endgame_results(current_board, all_players, round_count):
-    ''' Displays final round number and final scores for each player
+def get_show_command():
+    ''' Collects sys arg to display board or not while a game cycle is running
     '''
-    current_board.display_endgame_board()
-    max_score = 0
-    scores = []
-    winner = "NONE"
-
-    print("\nENDGAME STATISTICS:")
-    print("===================\n")
-
-    for current_player in all_players:
-        print(current_player.player_color, ": ", current_player.player_score, sep="")
-        scores.append((current_player.player_color, current_player.player_score))
-        if current_player.player_score > max_score:
-            max_score = current_player.player_score
-        print("PIECES REMAINING: ", current_player.current_pieces)
-
-    print("WINNER:")
-    for player_color, score in sorted(scores, key=lambda x: x[1]):
-        if score == max_score:  # Prints all scores equal to the max score (accounts for ties)
-            print(player_color.strip())
-
-
-def user_game(current_board, all_players):
-    ''' Continously loops though game and each player's turn until end game
-    '''
-    round_count = 0
-    players_with_no_moves = 0
-
-    for current_player in itertools.cycle(all_players):
-        # all_valid_moves = current_board.get_all_valid_moves(round_count, current_player.player_color, current_player.current_pieces)  # TEST
-        # print("VALID MOVES FOR: ", current_player.player_color, ":", all_valid_moves, sep="")  # TEST OUTPUT
-        moves_present = current_player.check_moves(round_count)  # Checks if player can make any moves
-
-        if moves_present:  # If current player can make at least one move..
-            players_with_no_moves = 0  # Reset no_moves counter since at least one player could make move
-            #current_board.display_board(current_player, all_players, round_count, False)
-            gui.display_board(current_board.board_contents, current_player, all_players, round_count)
-            color, piece_type, index, orientation = current_player.prompt_turn()
-            current_board.update_board(color, piece_type, index, orientation, round_count, False)
+    try:
+        show_board = sys.argv[1]
+        if show_board == "show":
+            return True
         else:
-            players_with_no_moves += 1
-
-        if current_player.player_color == "Y ":  # Increment round count each time last player's turn is done.
-            round_count += 1
-
-        if players_with_no_moves == 4:  # If 4 players with no moves, end game
-            break
-
-    #display_endgame_results(all_players, round_count)
-    winner = current_board.calculate_winner(all_players, round_count)
-    gui.display_board(current_board.board_contents, current_player, all_players, round_count, winner)
+            print("MSG: Bad show board input. Use 'show' arg to display board while a game cycle is running.")
+            print("MSG: Running cycle without showing board...\n")
+            return False
+    except IndexError:
+        return False
 
 
-def ai_game(current_board, all_players):
-    ''' Runs an AI game that collects all available moves then requests one move to play until all AI instances
-        can't make any more moves at which point the game is over.
+def initialize_players(current_board):
+    red = ai.AI(current_board, 1)
+    blue = ai.AI(current_board, 2)
+    green = ai.AI(current_board, 3)
+    yellow = ai.AI(current_board, 4)
+    all_players = [red, blue, green, yellow]
+
+    return all_players
+
+
+def run_game_cycle(current_board, show_board, all_players):
+    ''' Runs one complete game cycle where ai picks random move from list of available moves
     '''
+    total_start = time.time()
     round_count = 0
     player_count = 0
     num_players = len(all_players)
     players_with_no_moves = 0
     round_time = 0
 
-    for current_player in itertools.cycle(all_players):
-        all_valid_moves = current_player.collect_moves(round_count)
-        print("VALID MOVES FOR: ", current_player.player_color, ":", all_valid_moves, sep="")  # TEST OUTPUT
+    if show_board:
+        gui.start_gui()
 
-        gui.display_board(current_board.board_contents, current_player, all_players, round_count)  # I don't know why i need to put this here
+    for current_player in itertools.cycle(all_players):
+        all_valid_moves = current_player.collect_moves(current_board, round_count)  # change: passed in current_board
+
+        if show_board:
+            gui.display_board(current_board.board_contents, current_player, all_players, round_count)  # I don't know why i need to put this here
+
         if len(list(all_valid_moves.keys())) > 0:  # If no valid moves available for this player.
             players_with_no_moves = 0  # Reset to zero if at least one player can make a move
-            current_board.display_board(current_player, all_players, round_count, True)
-            gui.display_board(current_board.board_contents, current_player, all_players, round_count)
+
+            if show_board:
+                gui.display_board(current_board.board_contents, current_player, all_players, round_count)
 
             # Get all valid moves and ai decides on which one to make
             random_indexes = random.sample(all_valid_moves.items(), 1)
@@ -122,7 +83,7 @@ def ai_game(current_board, all_players):
 
             if player_count == 0:  # Stop ai game and look mechanism
                 end = time.time()
-                print("Time For AI Round ", round_count, ": ", round_time, sep="")
+                print("Time For AI Round ", round_count, ": ", round(round_time, 2), " seconds.", sep="")
                 # x = input()  # Stops each round to observe ai game visually. Disable by commenting out this line
                 start = time.time()
         else:
@@ -139,36 +100,27 @@ def ai_game(current_board, all_players):
         if players_with_no_moves == 4:  # If 4 players with no moves, end game
             break
 
-    #display_endgame_results(current_board, all_players, round_count)
     winner = current_board.calculate_winner(all_players, round_count)
-    gui.display_board(current_board.board_contents, current_player, all_players, round_count, winner)
+    print("Winner(s):", winner)
+    total_end = time.time()
+    print("Game took:", round(total_end - total_start, 2), "seconds.")
 
 
 def main():
+    show_board = get_show_command()
     welcome()
-    game_type = sys.argv[1]  # Gets user or ai game type command
 
     while True:
-        current_board = board.Board()  # New board every loop
-        gui.start_gui()
+        current_board = board.Board()
+        all_players = initialize_players(current_board)
+        run_game_cycle(current_board, show_board, all_players)
 
-        if game_type == "user":
-            all_players = initialize_user_players(current_board)
-            user_game(current_board, all_players)
-        elif game_type == "ai":
-            all_players = initialize_ai_players(current_board)
-            ai_game(current_board, all_players)
-        else:
-            print("You selected an invalid game type. Please try again.")
-
-        quit = input("Would you like to quit or restart? [quit]/restart: ").upper().strip()
-        if quit == "QUIT":
+        quit = input("\nWould you like to run another game cycle? ([y]/n): ").upper().strip()
+        if show_board:
+            gui.terminate_gui()
+        if quit == "N":
+            print("Goodbye!")
             break
-        else:
-            game_type = input("Would you like to run a human or ai game? [user/ai]: ").lower().strip()
-
-    print("\nGoodbye!")
-    gui.terminate_gui()
 
 
 if __name__ == "__main__":

@@ -1,27 +1,48 @@
+''' 
+Author: Caleb Pitts
+Date: 3/15/19
+
+Summary:
+Utlizes Pygame to show pieces getting placed on board as a visual cue. 
+When enabled, the gui slows computation time signifigantly. We recomend you 
+disable the gui for agent training. 
+'''
+
 import sys
-import pygame as pg
+import contextlib
+with contextlib.redirect_stdout(None):  # disables pygame welcome message
+    import pygame as pg
+
 clock = pg.time.Clock()
 
+COLORS = {1: (220, 20, 60),
+          2: (30, 144, 255),
+          3: (50, 205, 50),
+          4: (255, 255, 102),
+          0: (220, 220, 220)}
 
-COLORS = {'R': (220, 20, 60),
-          'B': (30, 144, 255),
-          'G': (50, 205, 50),
-          'Y': (255, 255, 102),
-          '.': (220, 220, 220)}
 
-
-def get_cell_color(x, y, board_contents):
-    ''' Returns string of the color of the current cell at coords x and y
+def decode_color_rgb(x, y, board_contents):
+    ''' Returns rgb code for coded cell color at coord (x, y) in board contents
     '''
-    cell = board_contents[y][x]  # color code with turn num
-    color = cell[0]  # color code
-    return COLORS[color]
+    return COLORS[board_contents[y][x]]
+
+
+def decode_color(player_color):
+    ''' Converts int representatio of player color to string representation.
+    '''
+    player_color_codes = {1: "R",
+                          2: "B",
+                          3: "G",
+                          4: "Y"}
+
+    return player_color_codes[player_color]
 
 
 def setup_texts(current_player, players, round_count):
     ''' Sets up texts to be displayed on the gui board.
     '''
-    player_text = "Player: " + current_player.player_color
+    player_text = "Player: " + decode_color(current_player.player_color)
     round_text = "Round: " + str(round_count)
     scores_text = "SCORES:  R = " + str(players[0].player_score) + " | B = " + str(players[1].player_score) + " | G = " + str(players[2].player_score) + " | Y = " + str(players[3].player_score)
 
@@ -47,8 +68,7 @@ def prep_cells(board_contents):
     for y in range(height):
         for x in range(width):
             rect = pg.Rect(x * (size + 1), y * (size + 1) + 55, size, size)
-            # The grid will be a list of (rect, color) tuples.
-            color = get_cell_color(x, y, board_contents)
+            color = decode_color_rgb(x, y, board_contents)
             rectangles.append((rect, color))
 
     return rectangles
@@ -72,7 +92,8 @@ def display_board(board_contents, current_player, players, round_count, winners=
 
     winner_indicator = None
 
-    # if winner is not None:  # NOT WORKING
+    # Displays winner in final state of board.
+    # if winner is not None:
     #     print("FOUND WINNER", winner)
     #     scores_text = "WINNER: " + winner
     #     winner_font = pg.font.SysFont('Helvetica', 20)
@@ -83,29 +104,17 @@ def display_board(board_contents, current_player, players, round_count, winners=
     pg.display.flip()
     clock.tick(60)
 
-    # pg.display.update()
-
 
 def start_gui():
+    ''' Initializies pygame gui window
+    '''
     pg.display.init()
-    pg.display.set_caption('Blockus Game - Beta')
+    pg.display.set_caption('Blockus Game - Visual Cue')
     pg.font.init()
 
 
 def terminate_gui():
+    ''' Closes pygame gui window
+    '''
     pg.display.quit()
     pg.quit()
-    print("quit pygame")
-    sys.exit(0)
-
-# PIECES FOR LATER?
-# elif pg.mouse.get_pressed()[0]:
-#     mouse_pos = pg.mouse.get_pos()
-#     # Enumerate creates tuples of a number (the index)
-#     # and the rect-color tuple, so it looks like:
-#     # (0, (<rect(0, 0, 20, 20)>, (255, 255, 255)))
-#     # You can unpack them directly in the head of the loop.
-#     for index, (rect, color) in enumerate(rectangles):
-#         if rect.collidepoint(mouse_pos):
-#             # Create a tuple with the new color and assign it.
-#             rectangles[index] = (rect, new_color)

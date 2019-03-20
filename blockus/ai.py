@@ -1,4 +1,14 @@
-# {key - piece name: val - associated piece points}
+''' 
+Author: Caleb Pitts
+Date: 3/15/19
+
+Summary:
+Keeps track of player score, inventory, and returns valid moves for that specific player.
+'''
+
+# Stores structure of all playable pieces
+# key: piece name
+# val: number of points associated with piece
 GAME_PIECE_VALUES = {"monomino1": 1, "domino1": 2,
                      "trominoe1": 3, "trominoe2": 3,
                      "tetrominoes1": 4, "tetrominoes2": 4,
@@ -14,12 +24,13 @@ GAME_PIECE_VALUES = {"monomino1": 1, "domino1": 2,
 
 class AI:
     def __init__(self, board_state, color):
-        # self.board_state = board_state
-        self.player_color = color
         self.player_score = 0
+        self.player_color = color
         self.current_pieces = list(GAME_PIECE_VALUES.keys())  # Gives all piece names to player when game starts
 
     def collect_moves(self, board, round_count):
+        ''' Collects all valid moves for this player from the current state of the board
+        '''
         return board.get_all_valid_moves(round_count, self.player_color, self.current_pieces)
 
     def check_moves(self, board, round_count):
@@ -30,11 +41,8 @@ class AI:
             return False
         return True
 
-    def request_move(self):
-        pass
-
     def update_player(self, piece_type):
-        ''' Removes piece from the player's inventory and updates score
+        ''' Keeps track of player's inventory and score as piece type has been played
         '''
         self.current_pieces.remove(piece_type)  # Remove played piece from player's inventory
 
