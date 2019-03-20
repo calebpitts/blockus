@@ -15,7 +15,7 @@
 disable the gui for agent training. 
 
 ## Valid Moves
-```piece_type```: Blockus has 21 playable pieces. Each player name is defined in a dictionary in blockus/board.py
+```piece_type```: Blockus has 21 playable pieces. Each piece's set of offsets are defined in a dictionary in blockus/board.py
 
 ```index```: The index is a cell on the board where the piece can be rotated and flipped around. 
 
