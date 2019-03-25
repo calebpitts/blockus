@@ -1,13 +1,11 @@
-from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
-from spacetimerl.client_environment import ClientEnv
-from blockus.board import Board, PIECE_TYPES
-from blockus.ai import AI
-from blockus import gui
-from typing import Tuple, List, Union, Dict
-import numpy as np
 from copy import deepcopy
+from typing import Tuple, List, Union, Dict
+
 import dill
-import random
+import numpy as np
+from blockus.ai import AI
+from blockus.board import Board, PIECE_TYPES, ORIENTATIONS
+from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
 
 PLAYER_TO_COLOR = {
     0: 1,
@@ -26,119 +24,166 @@ COLOR_TO_PLAYER = {
 
 PIECE_NAME_TO_INDEX = {piece_name: i for i, piece_name in enumerate(PIECE_TYPES.keys())}
 
+State = Tuple[Board, int, List[AI]]
 
-def relative_player_id(current_player: int, absolute_player_num) -> int:
+
+def _relative_player_id(current_player: int, absolute_player_num) -> int:
     if absolute_player_num < 0:
         return absolute_player_num
 
     return (absolute_player_num - current_player) % 4
 
 
-def action_to_string(piece_type, index, orientation):
+def action_to_string(piece_type: str, index: Tuple[int, int], orientation: str) -> str:
+    """Convert a piece_type, index, and orientation into a formatted action string.
+
+    Parameters
+    ----------
+    piece_type : str
+        The type of blockus piece to be placed in the action.
+    index : Tuple[int, int]
+        The location where the piece will be placed in the action.
+    orientation : str
+        The orientation in which the piece will be placed in the action.
+
+    Returns
+    -------
+    action_string : str
+
+    See Also
+    --------
+    blockus.blockus_env.BlockusEnv.all_piece_types
+        Get list of all possible piece types
+    blockus.blockus_env.BlockusEnv.all_orientations
+         Get list of all possible orientations
+    blockus.blockus_env.BlockusEnv.is_valid_action
+        Check if action string is valid
+    """
     return "{};{};{}".format(piece_type, index, orientation)
 
 
-def string_to_action(action_str: str):
+def string_to_action(action_str: str) -> Tuple[str, Tuple[int, int], str]:
+    """Convert a formatted action string into piece_type, index, and orientation.
+
+    Parameters
+    ----------
+    action_str : str
+        The action in string format
+
+    Returns
+    -------
+    piece_type : str
+        The type of blockus piece to be placed in the action.
+    index : Tuple[int, int]
+        The location where the piece will be placed in the action.
+    orientation : str
+        The orientation in which the piece will be placed in the action.
+    """
+
+    if action_str == '':
+        return None
 
     piece_type, index, orientation = action_str.split(";")
     index = tuple(map(int, index.replace('(', '').replace(')', '').split(',')))
     return piece_type, index, orientation
 
 
-def start_gui():
-    gui.start_gui()
-
-
-def terminate_gui():
-    gui.terminate_gui()
-
-
-class BlockusClientEnv(ClientEnv):
-
-    def __init__(self, *args, **kwargs):
-        self._gui_is_active = False
-        super().__init__(*args, **kwargs)
-
-    def __del__(self):
-        if self._gui_is_active:
-            terminate_gui()
-
-    def _display_board(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
-        _, inner_state = state
-        board, round_count, players = inner_state
-        current_player = players[player_num]
-        gui.display_board(board_contents=board.board_contents, current_player=current_player, players=players,
-                          round_count=round_count, winners=winners)
-
-    def render(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
-        if not self._gui_is_active:
-            start_gui()
-            self._display_board(state, player_num, winners)
-        self._display_board(state, player_num, winners)
-
-    def random_valid_action_string(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int) -> str:
-        _, inner_state = state
-        board, round_count, players = inner_state
-        player = players[player_num]
-
-        all_valid_moves = player.collect_moves(board, round_count)
-        # print("All possible moves for you: {}".format(all_valid_moves))
-        # input('press enter to play random move:')
-
-        if len(all_valid_moves.keys()) != 0:
-            random_indexes = random.sample(all_valid_moves.items(), 1)
-            piece_type = random_indexes[0][0]
-            index = list(all_valid_moves[piece_type].keys())[0]
-            orientation = all_valid_moves[piece_type][index][0]
-
-            string_action = action_to_string(piece_type, index, orientation)
-        else:
-            string_action = ""
-
-        return string_action
-
-    def valid_actions_list(self) -> [str]:
-        """ Valid actions for a specific state. """
-        return self._server_environment.valid_actions(state=self.full_state, player=self._player.number)
-
-    def valid_actions_dict(self) -> Dict[str, Dict[Tuple[int], List[str]]]:
-        """ Valid actions for a specific state in the dictionary form {piece_type: {index: [orientation]}}"""
-        return self._server_environment.valid_actions_dict(state=self.full_state, player=self._player.number)
-
-
 @turn_based_environment
 class BlockusEnv(TurnBasedEnvironment):
+    r"""
+    Full Blockus environment class with access to the actual game state.
+    """
 
     @property
     def min_players(self) -> int:
-        """ Property holding the number of players present required to play game. """
+        r""" Property holding the number of players present required to play the game.
+
+        (Always 4 for Blokus)
+        """
         return 4
 
     @property
     def max_players(self) -> int:
-        """ Property holding the max number of players present for a game. """
+        r""" Property holding the max number of players present for a game.
+
+        (Always 4 for Blokus)
+        """
         return 4
 
     @property
-    def observation_shape(self) -> tuple:
-        """ Property holding the numpy shape of a transformed observation state. """
+    def observation_shape(self) -> Dict[str, Tuple[int, ...]]:
+        """ Property holding the numpy array shapes for each value in an observation dictionary."""
 
         return {"board": (20, 20), "pieces": (4, 21), "score": (4,), "player": (1,)}
 
     @staticmethod
     def observation_names():
-        return ["board", "pieces", "score", "player"]
-
-    def new_state(self, num_players: int = 4) -> Tuple[Board, int, List[AI]]:
-        """ Create a fresh state. This could return a fixed object or randomly initialized on, depending on the game.
+        """ Get the names for each key in an observation dictionary.
 
         Returns
         -------
-        new_state : np.ndarray
-            A state for the new game.
-        new_players: [int]
-            List of players whos turn it is now.
+        observation_names : List[int]
         """
+
+        return ["board", "pieces", "score", "player"]
+
+    @staticmethod
+    def all_piece_types() -> List[str]:
+        """ Get the names every possible piece type in a game of Blockus.
+
+        Returns
+        -------
+        piece_types : List[str]
+        """
+
+
+        return PIECE_TYPES.keys()
+
+    @staticmethod
+    def all_orientations() -> List[str]:
+        """ Get the names every possible piece orientation in a game of Blockus.
+
+        Returns
+        -------
+        orientations : List[str]
+        """
+        return ORIENTATIONS
+
+    def new_state(self, num_players: int = 4) -> State:
+        r"""new_state(self) -> State
+        Create a fresh Blokus board state for a new game.
+
+        Returns
+        -------
+        new_state : State
+            A state for the new game.
+        new_players : List[int]
+            List of players who's turn it is in this new state.
+
+
+        See Also
+        --------
+
+        blockus.blockus_env.BlockusEnv.state_to_observation : Convert states to player specific observations with this method.
+        blockus.blockus_env.BlockusEnv.next_state : Pass states to this method to perform a game step.
+
+
+        Notes
+        -----
+
+        States are arbitrary internal Blokus logic types. In a normal use case,
+        there is no need to access or modifying individual data in a state.
+
+        States are not in a format intended to be consumable for a reinforcement learning agent.
+        Reinforcement leaning agents are intended to take observations as input,
+        and :py:func:`blockus.blockus_env.BlockusEnv.state_to_observation` can be used to convert states into observations.
+
+        """
+        if num_players is None:
+            num_players = 4
+
+        assert num_players == 4
+
         board = Board()
         red = AI(board, 1)
         blue = AI(board, 2)
@@ -150,21 +195,104 @@ class BlockusEnv(TurnBasedEnvironment):
     # Serialization Methods
     @staticmethod
     def serializable() -> bool:
+        """ Whether or not this class supports state serialization.
+
+        (This always returns True for Blockus)
+
+        Returns
+        -------
+        is_serializable : bool
+            True
+        """
         return True
 
     @staticmethod
-    def serialize_state(state: object) -> bytes:
+    def serialize_state(state: State) -> bytearray:
+        """ Serialize a game state and convert it to a bytearray to be saved or sent over a network.
+
+        Parameters
+        ----------
+        state : State
+            state to be serialized
+
+        Returns
+        -------
+        serialized_state : bytearray
+            serialized state
+
+        """
         return dill.dumps(state)
 
     @staticmethod
-    def deserialize_state(serialized_state: bytes) -> object:
-        # print("serialize state:\n{}".format(serialized_state))
-        # exit()
+    def deserialize_state(serialized_state: bytearray) -> State:
+        """ Convert a serialized bytearray back into a game state.
+
+        Parameters
+        ----------
+        serialized_state : bytearray
+            state bytearray to be deserialized
+
+        Returns
+        -------
+        deserialized_state : State
+            deserialized state
+
+        """
         return dill.loads(serialized_state)
 
-    def next_state(self, state: Tuple[Board, int, List[AI]], player_num: int, action: str) \
-            -> Tuple[Tuple[Board, int, List[AI]], float, bool, Union[List[int], None]]:
+    def next_state(self, state: State, player_num: int, action: str) \
+            -> Tuple[State, float, bool, Union[List[int], None]]:
+        """ next_state(self, state: State, players: [int], actions: [str]) \
+            -> Tuple[State, List[int], List[float], bool, Union[List[int], None]]
 
+        Perform a game step from a given state.
+
+
+        Parameters
+        ----------
+        state : State
+            The current state to execute a game step from.
+        players : List[int]
+            The players who's turn it is and are executing actions.
+            For Blockus, only one player should ever be passed in this list at a time.
+        actions : List[str],
+            The actions to be executed by the players who's turn it is.
+            For Blockus, only one action should ever be passed in this list at a time.
+
+        Returns
+        -------
+        next_state : State
+            The new state resulting after the game step.
+        next_players : List[int]
+            The new players who's turn it is after the game step.
+            For Blockus, this will always only be one player.
+        rewards : List[float]
+            Rewards for the players who's turn it was.
+            For Blockus, this will always only be one reward for the single player that execute the action.
+        terminal : bool
+            Whether the game is now over.
+        winners : Union[List[int], None]
+            The players that won the game if it is over, else None.
+
+
+        See Also
+        --------
+
+        blockus.blockus_env.BlockusEnv.state_to_observation : Convert states to player specific observations with this method.
+        blockus.blockus_env.BlockusEnv.new_state : Create new game states with this method.
+
+
+        Notes
+        -----
+
+        States are arbitrary internal Blokus logic types. In a normal use case,
+        there is no need to access or modifying individual data in a state.
+
+        States are not in a format intended to be consumable for a reinforcement learning agent.
+        Reinforcement leaning agents are intended to take observations as input,
+        and blockus.blockus_env.state_to_observation can be used to convert states into observations.
+
+        """
         board, round_count, players = state
 
         players = deepcopy(players)
@@ -206,11 +334,43 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return (new_board, round_count, players), reward, terminal, winners
 
-    def valid_actions(self, state: Tuple[Board, int, List[AI]], player: int) -> [str]:
-        """ Valid actions for a specific state. """
-        actions_dict = self.valid_actions_dict(state=state, player=player)
+    def valid_actions(self, state: State, player: int) -> List[str]:
+        """ Valid actions for a specific state and player.
+        If there are no valid actions, empty string is given to represent a no-op
 
-        # print(actions_dict)
+        Parameters
+        ----------
+        state : State
+            The current state to execute a game step from.
+        player : int
+            The player for which valid actions will be returned.
+
+        Returns
+        -------
+        valid_actions : list[int]
+            A list of valid action strings which the player may execute.
+
+
+        See Also
+        --------
+        blockus.blockus_env.action_to_string
+        blockus.blockus_env.string_to_action
+        blockus.blockus_env.is_valid_action
+        blockus.blockus_env.BlockusEnv.next_state
+            If an action is valid, you can pass it to this method.
+
+        Notes
+        -----
+        Players must always choose actions included in this list.
+        If no actions are valid for a player, this function returns an empty string.
+        When it is a player's turn, if the player has no valid actions,
+        it must pass an empty string as its action for :py:func:`blockus.blockus_env.BlockusEnv.next_state`
+        for the game to continue.
+
+        This method does not keep track of who's turn it is. That is up to the user.
+        If the specified player can physically place a piece at a location, it will be returned as a valid action.
+        """
+        actions_dict = self.valid_actions_dict(state=state, player=player)
 
         valid_moves = []
         for piece_type, index_orientation_dict in actions_dict.items():
@@ -223,16 +383,76 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return valid_moves
 
-    def valid_actions_dict(self, state: Tuple[Board, int, List[AI]], player: int) -> Dict[str, Dict[Tuple[int], List[str]]]:
-        """ Valid actions for a specific state in the dictionary form {piece_type: {index: [orientation]}}"""
+    def valid_actions_dict(self, state: State, player: int) -> Dict[str, Dict[Tuple[int], List[str]]]:
+        """ Valid actions for a specific state and player in the dictionary form {piece_type: {index: [orientation,]}}
+
+        Parameters
+        ----------
+        state : State
+            The current state to execute a game step from.
+        player : int
+            The player for which valid actions will be returned.
+
+        Returns
+        -------
+        valid_actions_dict : Dict[str, Dict[Tuple[int], List[str]]]
+            A dictionary of valid actions broken down into piece_type, index, and orientations.
+
+
+        See Also
+        --------
+        blockus.blockus_env.action_to_string
+        blockus.blockus_env.string_to_action
+        blockus.blockus_env.valid_actions
+        blockus.blockus_env.is_valid_action
+        blockus.blockus_env.BlockusEnv.next_state
+            If an action is valid, you can pass it to this method.
+
+        Notes
+        -----
+        This method does not keep track of who's turn it is. That is up to the user.
+        If the specified player can physically place a piece at a location, it will be returned as a valid action.
+
+        """
         board, round_count, players = state
         current_player_object = players[player]
         return board.get_all_valid_moves(round_count=round_count,
                                          player_color=PLAYER_TO_COLOR[player],
                                          player_pieces=current_player_object.current_pieces)
 
-    def is_valid_action(self, state: Tuple[Board, int, List[AI]], player_num: int, action: str) -> bool:
-        """ Valid actions for a specific state. """
+    def is_valid_action(self, state: State, player_num: int, action: str) -> bool:
+        """ Returns True if an action is valid for a specific player and state.
+
+        Parameters
+        ----------
+        state : State
+            The current state to execute a game step from.
+        player_num : int
+            The player that would be executing the action.
+        action : str
+            The action in question
+
+        Returns
+        -------
+        is_action_valid : bool
+            whether this action is valid
+
+        See Also
+        --------
+        blockus.blockus_env.action_to_string
+        blockus.blockus_env.string_to_action
+        blockus.blockus_env.valid_actions
+        blockus.blockus_env.is_valid_action
+        blockus.blockus_env.BlockusEnv.next_state
+            If an action is valid, you can pass it to this method.
+
+
+        Notes
+        -----
+        This method does not keep track of who's turn it is. That is up to the user.
+        If a piece may be physically placed at the location suggest by the action,
+        this method returns true, regardless of who just executed their turn or who should be going now.
+        """
 
         if len(action) == 0:
             return False
@@ -252,21 +472,47 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return is_valid_move
 
-    def state_to_observation(self, state: Tuple[Board, int, List[AI]], player: int) -> Dict[str, np.ndarray]:
-        """ Convert the raw game state to the observation for the agent.
-        The observation must be able to be fed into your predictor.
-        This can return different values for the different players. Default implementation is just the identity."""
+    def state_to_observation(self, state: State, player: int) -> Dict[str, np.ndarray]:
+        """ Convert the raw game state to a consumable observation for a specific player agent.
+
+        Parameters
+        ----------
+        state : State
+            The state to create an observation for
+        player : int
+            The player who is intended to view the observation
+
+        Returns
+        -------
+        observation : Dict[str, np.ndarray]
+            The observation for the player RL agent to view
+
+        See Also
+        --------
+        blockus.blockus_client_env.BlockusClientEnv.wait_for_turn : also returns observations
+        blockus.blockus_client_env.BlockusClientEnv.step : also returns observations
+
+        Notes
+        -----
+        Observations returned here are of the same format as those given
+        by :py:func:`blockus.blockus_client_env.BlockusClientEnv.step`.
+
+        Observations are specific to individual players.
+        Every observation is presented as if the player intended to receive it were actually player 0.
+        This is done so that an RL agent only has to learn to perform moves that make player 0 win
+        and other players lose.
+        """
 
         pieces = np.zeros((4, 21), dtype=np.uint8)
         board, round_count, players = state
-        board = [[relative_player_id(player, COLOR_TO_PLAYER[pos]) for pos in row] for row in board.board_contents]
+        board = [[_relative_player_id(player, COLOR_TO_PLAYER[pos]) for pos in row] for row in board.board_contents]
         board = np.asarray(board)
 
         for p in players:
 
             color = p.player_color
-            rel_player_id = relative_player_id(current_player=player,
-                                               absolute_player_num=COLOR_TO_PLAYER[color])
+            rel_player_id = _relative_player_id(current_player=player,
+                                                absolute_player_num=COLOR_TO_PLAYER[color])
 
             for piece in p.current_pieces:
                 pieces[rel_player_id, PIECE_NAME_TO_INDEX[piece]] = 1

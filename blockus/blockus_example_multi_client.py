@@ -1,4 +1,5 @@
-from blockus.blockus_env import BlockusEnv, BlockusClientEnv
+from blockus.blockus_env import BlockusEnv
+from blockus.blockus_client_env import BlockusClientEnv
 from spacetimerl.rl_logging import init_logging
 import logging
 from spacetimerl.client_environment import RLApp
