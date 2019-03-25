@@ -1,17 +1,9 @@
 from typing import Tuple, List, Dict
 
-from blockus import gui
 from blockus.ai import AI
+from blockus.blockus_env import start_gui, terminate_gui, display_board
 from blockus.board import Board
 from spacetimerl.client_environment import ClientEnv
-
-
-def _start_gui():
-    gui.start_gui()
-
-
-def _terminate_gui():
-    gui.terminate_gui()
 
 
 class BlockusClientEnv(ClientEnv):
@@ -22,14 +14,7 @@ class BlockusClientEnv(ClientEnv):
 
     def __del__(self):
         if self._gui_is_active:
-            _terminate_gui()
-
-    def _display_board(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
-        _, inner_state = state
-        board, round_count, players = inner_state
-        current_player = players[player_num]
-        gui.display_board(board_contents=board.board_contents, current_player=current_player, players=players,
-                          round_count=round_count, winners=winners)
+            terminate_gui()
 
     def render(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int, winners: List[int]):
         r"""A one-line summary that does not use variable names or the
@@ -37,9 +22,9 @@ class BlockusClientEnv(ClientEnv):
 
         """
         if not self._gui_is_active:
-            _start_gui()
-            self._display_board(state, player_num, winners)
-        self._display_board(state, player_num, winners)
+            start_gui()
+            display_board(state, player_num, winners)
+        display_board(state, player_num, winners)
 
     # TODO: random_valid_action_strings will be deleted because it isn't random and doesn't conform the standardized api
     # def random_valid_action_string(self, state: Tuple[int, Tuple[Board, int, List[AI]]], player_num: int) -> str:

@@ -3,6 +3,7 @@ from typing import Tuple, List, Union, Dict
 
 import dill
 import numpy as np
+from blockus import gui
 from blockus.ai import AI
 from blockus.board import Board, PIECE_TYPES, ORIENTATIONS
 from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
@@ -24,7 +25,7 @@ COLOR_TO_PLAYER = {
 
 PIECE_NAME_TO_INDEX = {piece_name: i for i, piece_name in enumerate(PIECE_TYPES.keys())}
 
-State = Tuple[Board, int, List[AI]]
+State = object
 
 
 def _relative_player_id(current_player: int, absolute_player_num) -> int:
@@ -87,6 +88,85 @@ def string_to_action(action_str: str) -> Tuple[str, Tuple[int, int], str]:
     index = tuple(map(int, index.replace('(', '').replace(')', '').split(',')))
     return piece_type, index, orientation
 
+def start_gui():
+    """Initialize graphical interface in order to render board.
+
+    You must first call this function once before making calls to :py:func:`blockus.blockus_env.display_board`.
+
+    See Also
+    --------
+    blockus.blockus_env.display_board
+    blockus.blockus_env.terminate_gui
+
+    """
+    gui.start_gui()
+
+
+def terminate_gui():
+    """Terminate the graphical interface.
+
+    See Also
+    --------
+    blockus.blockus_env.start_gui
+    blockus.blockus_env.display_board
+
+    """
+    gui.terminate_gui()
+
+
+def display_board(state: object, player_num: int, winners: Union[List[int], None]):
+    """Render Board with graphical interface
+
+    Parameters
+    ----------
+
+    state : object
+        The state to render
+    player_num : int
+        The current player whose turn it is.
+    winners : List[int] (optional)
+        The winners of the game
+
+    Notes
+    -----
+    :py:func:`blockus.blockus_env.start_gui` must first be called once before calling this function.
+
+    See Also
+    --------
+    blockus.blockus_env.start_gui
+    blockus.blockus_env.terminate_gui
+    blockus.blockus_env.print_board
+
+    """
+
+    _, inner_state = state
+    board, round_count, players = inner_state
+    current_player = players[player_num]
+    gui.display_board(board_contents=board.board_contents, current_player=current_player, players=players,
+                      round_count=round_count, winners=winners)
+
+def print_board(state: object):
+    """Print board to console
+
+    Parameters
+    ----------
+
+    state : object
+        The state to render
+
+    Notes
+    -----
+    Pieces are marked by the player number that placed them.
+    -1 marks empty spaces.
+
+    See Also
+    --------
+    blockus.blockus_env.start_gui
+    blockus.blockus_env.terminate_gui
+    blockus.blockus_env.display_board
+    """
+
+    print(state[1][0].board_contents-1)
 
 @turn_based_environment
 class BlockusEnv(TurnBasedEnvironment):
@@ -150,12 +230,12 @@ class BlockusEnv(TurnBasedEnvironment):
         return ORIENTATIONS
 
     def new_state(self, num_players: int = 4) -> State:
-        r"""new_state(self) -> State
+        r"""new_state(self) -> object
         Create a fresh Blokus board state for a new game.
 
         Returns
         -------
-        new_state : State
+        new_state : object
             A state for the new game.
         new_players : List[int]
             List of players who's turn it is in this new state.
@@ -207,12 +287,12 @@ class BlockusEnv(TurnBasedEnvironment):
         return True
 
     @staticmethod
-    def serialize_state(state: State) -> bytearray:
+    def serialize_state(state: object) -> bytearray:
         """ Serialize a game state and convert it to a bytearray to be saved or sent over a network.
 
         Parameters
         ----------
-        state : State
+        state : object
             state to be serialized
 
         Returns
@@ -234,23 +314,23 @@ class BlockusEnv(TurnBasedEnvironment):
 
         Returns
         -------
-        deserialized_state : State
+        deserialized_state : object
             deserialized state
 
         """
         return dill.loads(serialized_state)
 
-    def next_state(self, state: State, player_num: int, action: str) \
+    def next_state(self, state: object, player_num: int, action: str) \
             -> Tuple[State, float, bool, Union[List[int], None]]:
-        """ next_state(self, state: State, players: [int], actions: [str]) \
-            -> Tuple[State, List[int], List[float], bool, Union[List[int], None]]
+        """ next_state(self, state: object, players: [int], actions: [str]) \
+            -> Tuple[object, List[int], List[float], bool, Union[List[int], None]]
 
         Perform a game step from a given state.
 
 
         Parameters
         ----------
-        state : State
+        state : object
             The current state to execute a game step from.
         players : List[int]
             The players who's turn it is and are executing actions.
@@ -261,7 +341,7 @@ class BlockusEnv(TurnBasedEnvironment):
 
         Returns
         -------
-        next_state : State
+        next_state : object
             The new state resulting after the game step.
         next_players : List[int]
             The new players who's turn it is after the game step.
@@ -334,13 +414,13 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return (new_board, round_count, players), reward, terminal, winners
 
-    def valid_actions(self, state: State, player: int) -> List[str]:
+    def valid_actions(self, state: object, player: int) -> List[str]:
         """ Valid actions for a specific state and player.
         If there are no valid actions, empty string is given to represent a no-op
 
         Parameters
         ----------
-        state : State
+        state : object
             The current state to execute a game step from.
         player : int
             The player for which valid actions will be returned.
@@ -383,12 +463,12 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return valid_moves
 
-    def valid_actions_dict(self, state: State, player: int) -> Dict[str, Dict[Tuple[int], List[str]]]:
+    def valid_actions_dict(self, state: object, player: int) -> Dict[str, Dict[Tuple[int], List[str]]]:
         """ Valid actions for a specific state and player in the dictionary form {piece_type: {index: [orientation,]}}
 
         Parameters
         ----------
-        state : State
+        state : object
             The current state to execute a game step from.
         player : int
             The player for which valid actions will be returned.
@@ -420,12 +500,12 @@ class BlockusEnv(TurnBasedEnvironment):
                                          player_color=PLAYER_TO_COLOR[player],
                                          player_pieces=current_player_object.current_pieces)
 
-    def is_valid_action(self, state: State, player_num: int, action: str) -> bool:
+    def is_valid_action(self, state: object, player_num: int, action: str) -> bool:
         """ Returns True if an action is valid for a specific player and state.
 
         Parameters
         ----------
-        state : State
+        state : object
             The current state to execute a game step from.
         player_num : int
             The player that would be executing the action.
@@ -472,12 +552,12 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return is_valid_move
 
-    def state_to_observation(self, state: State, player: int) -> Dict[str, np.ndarray]:
+    def state_to_observation(self, state: object, player: int) -> Dict[str, np.ndarray]:
         """ Convert the raw game state to a consumable observation for a specific player agent.
 
         Parameters
         ----------
-        state : State
+        state : object
             The state to create an observation for
         player : int
             The player who is intended to view the observation
