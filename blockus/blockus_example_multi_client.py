@@ -55,7 +55,7 @@ def client_subproc_worker(remote, parent_remote, server_hostname, server_port):
                 elif cmd == 'quit':
                     break
                 elif cmd == 'valid_actions_list':
-                    remote.send(ce.valid_actions_list())
+                    remote.send(ce.valid_actions())
                 elif cmd == 'valid_actions_dict':
                     remote.send(ce.valid_actions_dict())
                 elif cmd == 'player_num':
