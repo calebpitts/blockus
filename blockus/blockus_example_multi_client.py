@@ -108,7 +108,7 @@ def main():
                     continue
 
             # Render player's view of game
-            # client_remote.send((render,))
+            # client_remote.send(('render', None))
 
             # Get available actions for this player
             client_remote.send(("valid_actions_list", None))

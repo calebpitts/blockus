@@ -78,14 +78,14 @@ class Board:
         '''
         self.board_contents[y][x] = self.player_color
 
-    def gather_empty_board_corners(self, corners_coords):
-        ''' Checks what corners are still available to play in the first round of the game
-        '''
-        empty_corners = []
-        for corner in corners_coords:
-            if self.board_contents[corner[1]][corner[0]] == 0:
-                empty_corners.append((corner[0], corner[1]))
-        return empty_corners
+    # def gather_empty_board_corners(self, corners_coords):
+    #     ''' Checks what corners are still available to play in the first round of the game
+    #     '''
+    #     empty_corners = []
+    #     for corner in corners_coords:
+    #         if self.board_contents[corner[1]][corner[0]] == 0:
+    #             empty_corners.append((corner[0], corner[1]))
+    #     return empty_corners
 
     def gather_empty_corner_indexes(self, player_color):
         ''' Returns a list of tuples with the indexes of empty corner cells that connect to the player's color.
@@ -151,7 +151,8 @@ class Board:
             - May lay adjacent to another piece as long as its another color
         '''
         if round_count == 0:  # If still first round of game..
-            empty_corner_indexes = self.gather_empty_board_corners([(0, 0), (19, 0), (0, 19), (19, 19), (19, 19)])
+            # empty_corner_indexes = self.gather_empty_board_corners([(0, 0), (19, 0), (0, 19), (19, 19)])
+            empty_corner_indexes = [[(0, 0), (19, 0), (0, 19), (19, 19)][player_color-1]]
         else:
             empty_corner_indexes = self.gather_empty_corner_indexes(player_color)
 
