@@ -5,7 +5,7 @@ import dill
 import numpy as np
 from blockus import gui
 from blockus.ai import AI
-from blockus.board import Board, PIECE_TYPES, ORIENTATIONS
+from blockus.board import Board, PIECE_TYPES, ORIENTATIONS, BOARD_TO_PLAYER_OBSERVATION_ROTATION_MATRICES, PLAYER_OBSERVATION_TO_BOARD_ROTATION_MATRICES
 from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
 
 PLAYER_TO_COLOR = {
@@ -26,6 +26,23 @@ COLOR_TO_PLAYER = {
 PIECE_NAME_TO_INDEX = {piece_name: i for i, piece_name in enumerate(PIECE_TYPES.keys())}
 
 State = object
+
+
+def _rotate_board_for_player_perspective(board, player):
+    return np.rot90(board, k=-player)
+
+
+def _separate_offset_from_orientation(orientation_string):
+    orientation = []
+    offset = []
+
+    for c in orientation_string:
+        if c.isdigit():
+            offset.append(c)
+        else:
+            orientation.append(c)
+
+    return ''.join(orientation), ''.join(offset)
 
 
 def _relative_player_id(current_player: int, absolute_player_num) -> int:
@@ -463,7 +480,139 @@ class BlockusEnv(TurnBasedEnvironment):
 
         return valid_moves
 
-    def valid_actions_dict(self, state: object, player: int) -> Dict[str, Dict[Tuple[int], List[str]]]:
+    def player_perspective_valid_actions(self, state: object, player: int) -> List[str]:
+        """ Valid actions for a specific state and player from the player's perspective
+        in coordinance with the player's rotated observation of the board.
+        If there are no valid actions, empty string is given to represent a no-op
+
+        Parameters
+        ----------
+        state : object
+            The current state to execute a game step from.
+        player : int
+            The player for which valid actions will be returned.
+
+        Returns
+        -------
+        valid_actions : list[int]
+            A list of valid action strings which the player may execute.
+            These actions are rotated to match this player's perspective of the board,
+
+
+        See Also
+        --------
+        blockus.blockus_env.action_to_string
+        blockus.blockus_env.string_to_action
+        blockus.blockus_env.convert_player_perspective_action_to_real_action
+            You have to convert a player-perspective action to a real action before passing it to the environment
+
+        Notes
+        -----
+        This method does not keep track of who's turn it is. That is up to the user.
+        If the specified player can physically place a piece at a location (from the player's perspective),
+        it will be returned as a valid action.
+        """
+
+        # We have to remove num_players from the state since turn-based environment
+        # doesn't override this method and remove it for us.
+        _, state = state
+
+        actions_dict = self.valid_actions_dict(state=state, player=player)
+
+        valid_moves = []
+        for piece_type, index_orientation_dict in actions_dict.items():
+            for index, orientation_list in index_orientation_dict.items():
+                for orientation in orientation_list:
+
+                    player_action = self.convert_real_action_to_player_perspective_action(
+                        action_to_string(piece_type=piece_type, index=index, orientation=orientation), player=player
+                    )
+
+                    valid_moves.append(player_action)
+
+        if len(valid_moves) == 0:
+            valid_moves.append("")
+
+        return valid_moves
+
+    def convert_real_action_to_player_perspective_action(self, action: str, player: int) -> str:
+        """ Converts a real action consumable by the actual environment to the corresponding player-perspective action
+        that is in coordinance with the player's rotated observation of the board
+
+
+        Parameters
+        ----------
+        action: str
+            The real action.
+        player : int
+            The player to view this action from.
+
+        Returns
+        -------
+        player_action : str
+            The player-perspective action.
+
+        See Also
+        --------
+        blockus.blockus_env.convert_player_perspective_action_to_real_action
+            You have to convert a player-perspective action to a real action before passing it to the environment
+        """
+
+        if not action:
+            return ""
+
+        piece_type, index, orientation = string_to_action(action)
+
+        index = tuple((np.matmul(BOARD_TO_PLAYER_OBSERVATION_ROTATION_MATRICES[player],
+                                 (np.asarray(index) - 9.5)) + 9.5).astype(np.int32))
+
+        orientation, offset = _separate_offset_from_orientation(orientation)
+        orientation = ORIENTATIONS[(ORIENTATIONS.index(orientation) + player * 2) % len(ORIENTATIONS)]
+        orientation += offset
+
+        return action_to_string(piece_type, index, orientation)
+
+
+    def convert_player_perspective_action_to_real_action(self, player_action: str, player: int) -> str:
+        """ Converts a player-perspective action in coordinance with the player's rotated observation of the board
+        to the corresponding real action consumable by the actual environment.
+
+
+        Parameters
+        ----------
+        player_action: str
+            The player-perspective action.
+        player : int
+            The player to view this action from.
+
+        Returns
+        -------
+        action : str
+            The real action corresponding to the player-perspective action
+
+        See Also
+        --------
+        blockus.blockus_env.convert_player_perspective_action_to_real_action
+        blockus.blockus_env.BlockusEnv.next_state
+            You can pass the result of this method to this.
+
+        """
+
+        if not player_action:
+            return ""
+
+        piece_type, index, orientation = string_to_action(player_action)
+
+        index = tuple((np.matmul(PLAYER_OBSERVATION_TO_BOARD_ROTATION_MATRICES[player],
+                                 (np.asarray(index) - 9.5)) + 9.5).astype(np.int32))
+
+        orientation, offset = _separate_offset_from_orientation(orientation)
+        orientation = ORIENTATIONS[(ORIENTATIONS.index(orientation) - player * 2) % len(ORIENTATIONS)]
+        orientation += offset
+
+        return action_to_string(piece_type, index, orientation)
+
+    def valid_actions_dict(self, state: object, player: int) -> Dict[str, Dict[Tuple[int, int], List[str]]]:
         """ Valid actions for a specific state and player in the dictionary form {piece_type: {index: [orientation,]}}
 
         Parameters
@@ -502,6 +651,8 @@ class BlockusEnv(TurnBasedEnvironment):
 
     def is_valid_action(self, state: object, player_num: int, action: str) -> bool:
         """ Returns True if an action is valid for a specific player and state.
+
+        (Does not validate rotated player-perspective actions)
 
         Parameters
         ----------
@@ -586,7 +737,7 @@ class BlockusEnv(TurnBasedEnvironment):
         pieces = np.zeros((4, 21), dtype=np.uint8)
         board, round_count, players = state
         board = [[_relative_player_id(player, COLOR_TO_PLAYER[pos]) for pos in row] for row in board.board_contents]
-        board = np.asarray(board)
+        rotated_board = _rotate_board_for_player_perspective(board=np.asarray(board), player=player)
 
         for p in players:
 
@@ -599,4 +750,4 @@ class BlockusEnv(TurnBasedEnvironment):
 
         score = np.roll(np.array([p.player_score for p in players]), -player)
 
-        return {'board': board, 'pieces': pieces, 'score': score, 'player': np.array([player])}
+        return {'board': rotated_board, 'pieces': pieces, 'score': score, 'player': np.array([player])}
