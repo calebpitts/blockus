@@ -102,7 +102,7 @@ def string_to_action(action_str: str) -> Union[Tuple[str, Tuple[int, int], str],
         return None
 
     piece_type, index, orientation = action_str.split(";")
-    index = Tuple[int, int](map(int, index.replace('(', '').replace(')', '').split(',')))
+    index = tuple(map(int, index.replace('(', '').replace(')', '').split(',')))
     return piece_type, index, orientation
 
 def start_gui():
