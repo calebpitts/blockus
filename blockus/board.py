@@ -44,9 +44,34 @@ PIECE_TYPES = {"monomino1": np.array([(0, 0)]),
                "pentominoe11": np.array([(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)]),
                "pentominoe12": np.array([(0, 0), (1, 0), (1, -1), (2, 0), (3, 0)])}
 
-# All possible piece orientations
-ORIENTATIONS = ["north", "northwest", "south", "southeast", "west", "southwest", "northeast", "east"]
+# All possible piece orientations, listed in clockwise order
+ORIENTATIONS = ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"]
 
+# Default starting corners for each player (0 to 3)
+PLAYER_DEFAULT_CORNERS = [(0, 0), (19, 0), (0, 19), (19, 19)]
+
+BOARD_TO_PLAYER_OBSERVATION_ROTATION_MATRICES = np.array([
+    [[1, 0],
+     [0, 1]],
+    [[0, -1],
+     [1, 0]],
+    [[-1, 0],
+     [0, -1]],
+    [[0, 1],
+     [-1, 0]]
+], dtype=np.int32)
+
+
+PLAYER_OBSERVATION_TO_BOARD_ROTATION_MATRICES = np.array([
+    [[1, 0],
+     [0, 1]],
+    [[0, 1],
+     [-1, 0]],
+    [[-1, 0],
+     [0, -1]],
+    [[0, -1],
+     [1, 0]]
+], dtype=np.int32)
 
 class Board:
     def __init__(self, copy_from_board=None):
@@ -78,14 +103,14 @@ class Board:
         '''
         self.board_contents[y][x] = self.player_color
 
-    def gather_empty_board_corners(self, corners_coords):
-        ''' Checks what corners are still available to play in the first round of the game
-        '''
-        empty_corners = []
-        for corner in corners_coords:
-            if self.board_contents[corner[1]][corner[0]] == 0:
-                empty_corners.append((corner[0], corner[1]))
-        return empty_corners
+    # def gather_empty_board_corners(self, corners_coords):
+    #     ''' Checks what corners are still available to play in the first round of the game
+    #     '''
+    #     empty_corners = []
+    #     for corner in corners_coords:
+    #         if self.board_contents[corner[1]][corner[0]] == 0:
+    #             empty_corners.append((corner[0], corner[1]))
+    #     return empty_corners
 
     def gather_empty_corner_indexes(self, player_color):
         ''' Returns a list of tuples with the indexes of empty corner cells that connect to the player's color.
@@ -151,7 +176,8 @@ class Board:
             - May lay adjacent to another piece as long as its another color
         '''
         if round_count == 0:  # If still first round of game..
-            empty_corner_indexes = self.gather_empty_board_corners([(0, 0), (19, 0), (0, 19), (19, 19), (19, 19)])
+            # empty_corner_indexes = self.gather_empty_board_corners([(0, 0), (19, 0), (0, 19), (19, 19)])
+            empty_corner_indexes = [PLAYER_DEFAULT_CORNERS[player_color-1]]
         else:
             empty_corner_indexes = self.gather_empty_corner_indexes(player_color)
 

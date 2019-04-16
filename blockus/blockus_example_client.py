@@ -18,7 +18,7 @@ def main(ce: BlockusClientEnv):
     while True:
         # ce.render(ce.full_state, player_num, winners)
 
-        valid_actions = ce.valid_actions_list()
+        valid_actions = ce.valid_actions()
         action = choice(valid_actions)
 
         new_obs, reward, terminal, winners = ce.step(str(action))

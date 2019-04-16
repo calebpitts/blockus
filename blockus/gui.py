@@ -49,7 +49,7 @@ def setup_texts(current_player, players, round_count):
     titlefont = pg.font.SysFont('Helvetica', 30)
     gamefont = pg.font.SysFont('Helvetica', 20)
 
-    titlesurface = titlefont.render('Blockus', True, (255, 255, 255))
+    titlesurface = titlefont.render('Blokus', True, (255, 255, 255))
     player_indicator = gamefont.render(player_text, True, (255, 255, 255))
     round_indicator = gamefont.render(round_text, True, (255, 255, 255))
     scores_indicator = gamefont.render(scores_text, True, (255, 255, 255))
@@ -109,7 +109,7 @@ def start_gui():
     ''' Initializies pygame gui window
     '''
     pg.display.init()
-    pg.display.set_caption('Blockus Game - Visual Cue')
+    pg.display.set_caption('Blokus Game - Visual Cue')
     pg.font.init()
 
 
