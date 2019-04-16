@@ -6,7 +6,7 @@ import numpy as np
 from blockus import gui
 from blockus.ai import AI
 from blockus.board import Board, PIECE_TYPES, ORIENTATIONS
-from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
+from spacetimerl.base_environment import BaseEnvironment
 
 PLAYER_TO_COLOR = {
     0: 1,
@@ -166,10 +166,10 @@ def print_board(state: object):
     blockus.blockus_env.display_board
     """
 
-    print(state[1][0].board_contents-1)
+    print(state[0].board_contents-1)
 
-@turn_based_environment
-class BlockusEnv(TurnBasedEnvironment):
+
+class BlockusEnv(BaseEnvironment):
     r"""
     Full Blockus environment class with access to the actual game state.
     """
@@ -270,7 +270,7 @@ class BlockusEnv(TurnBasedEnvironment):
         green = AI(board, 3)
         yellow = AI(board, 4)
 
-        return board, 0, [red, blue, green, yellow]
+        return (board, 0, [red, blue, green, yellow]), [0]
 
     # Serialization Methods
     @staticmethod
@@ -320,12 +320,27 @@ class BlockusEnv(TurnBasedEnvironment):
         """
         return dill.loads(serialized_state)
 
-    def next_state(self, state: object, player_num: int, action: str) \
-            -> Tuple[State, float, bool, Union[List[int], None]]:
-        """ next_state(self, state: object, players: [int], actions: [str]) \
-            -> Tuple[object, List[int], List[float], bool, Union[List[int], None]]
+    def current_rewards(self, state: object) -> List[float]:
+        """Returns current reward for each player (in absolute order, not reltive to any specific player
 
-        Perform a game step from a given state.
+        Parameters
+        ----------
+        state : object
+            The current state to calculate rewards from
+
+        Returns
+        -------
+        rewards : List[float]
+            A vector containing the current rewards for each player
+
+        """
+        board, round_count, players = state
+
+        return [p.player_score for p in players]
+
+    def next_state(self, state: object, players: int, actions: str) \
+            -> Tuple[State, List[int], List[float], bool, Union[List[int], None]]:
+        """ Perform a game step from a given state.
 
 
         Parameters
@@ -373,6 +388,9 @@ class BlockusEnv(TurnBasedEnvironment):
         and blockus.blockus_env.state_to_observation can be used to convert states into observations.
 
         """
+        player_num = players[0]
+        action = actions[0]
+
         board, round_count, players = state
 
         players = deepcopy(players)
@@ -412,7 +430,9 @@ class BlockusEnv(TurnBasedEnvironment):
         if player_num == 3:
             round_count += 1
 
-        return (new_board, round_count, players), reward, terminal, winners
+        new_player_num = (player_num + 1) % 4
+
+        return (new_board, round_count, players), [new_player_num], [reward], terminal, winners
 
     def valid_actions(self, state: object, player: int) -> List[str]:
         """ Valid actions for a specific state and player.
