@@ -665,7 +665,7 @@ class BlockusEnv(BaseEnvironment):
                                          player_color=PLAYER_TO_COLOR[player],
                                          player_pieces=current_player_object.current_pieces)
 
-    def is_valid_action(self, state: object, player_num: int, action: str) -> bool:
+    def is_valid_action(self, state: object, player: int, action: str) -> bool:
         """ Returns True if an action is valid for a specific player and state.
 
         (Does not validate rotated player-perspective actions)
@@ -674,7 +674,7 @@ class BlockusEnv(BaseEnvironment):
         ----------
         state : object
             The current state to execute a game step from.
-        player_num : int
+        player : int
             The player that would be executing the action.
         action : str
             The action in question
@@ -706,7 +706,7 @@ class BlockusEnv(BaseEnvironment):
 
         board, round_count, players = state
         piece_type, index, orientation = string_to_action(action)
-        current_player = players[player_num]
+        current_player = players[player]
         all_valid_moves = current_player.collect_moves(board, round_count)
 
         is_valid_move = False
